@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { supabaseConfigurado } from "@/integrations/supabase/configurado";
 import type { Usuario } from "./useMercado";
 
 const ADMIN_HANDLE = "jose.luefer";
@@ -24,22 +25,22 @@ export function useSesion() {
   const [cargando, setCargando] = useState(true);
 
   useEffect(() => {
+    if (!supabaseConfigurado()) {
+      setCargando(false);
+      return;
+    }
+
     const { data: sub } = supabase.auth.onAuthStateChange((_e, session) => {
       setUsuario(
-        session?.user
-          ? aUsuario(session.user.id, session.user.email)
-          : null,
+        session?.user ? aUsuario(session.user.id, session.user.email) : null,
       );
       setCargando(false);
     });
-    
+
     supabase.auth.getSession().then(({ data }) => {
       setUsuario(
         data.session?.user
-          ? aUsuario(
-              data.session.user.id,
-              data.session.user.email,
-            )
+          ? aUsuario(data.session.user.id, data.session.user.email)
           : null,
       );
       setCargando(false);
@@ -48,6 +49,9 @@ export function useSesion() {
   }, []);
 
   const entrarConGoogle = async () => {
+    if (!supabaseConfigurado()) {
+      return "El acceso con Google necesita las claves de Supabase de este entorno.";
+    }
     await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
@@ -57,6 +61,7 @@ export function useSesion() {
   };
 
   const salir = async () => {
+    if (!supabaseConfigurado()) return;
     await supabase.auth.signOut();
   };
 
