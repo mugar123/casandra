@@ -1,5 +1,9 @@
 import { useEffect, useState } from "react";
-import { destinoDeRetorno } from "@/lib/retornoAuth";
+import {
+  anotarAvisoAuth,
+  destinoDeRetorno,
+  retornoConCredencial,
+} from "@/lib/retornoAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { supabaseConfigurado } from "@/integrations/supabase/configurado";
 import type { Usuario } from "./useMercado";
@@ -35,6 +39,11 @@ export function useSesion() {
       if (session?.user) {
         setUsuario(aUsuario(session.user.id, session.user.email));
       } else if (evento === "INITIAL_SESSION" || evento === "SIGNED_OUT") {
+        if (evento === "INITIAL_SESSION" && retornoConCredencial) {
+          anotarAvisoAuth(
+            "No se ha podido abrir la sesión. Vuelve a entrar con tu cuenta @usal.es.",
+          );
+        }
         setUsuario(null);
       }
       setCargando(false);

@@ -11,6 +11,11 @@ const CLAVES_QUE_NO_SE_REENVIAN = [
 // la dirección. Si el regreso de Google trae un error viejo junto al código,
 // Supabase aborta el canje y la pantalla de acceso no llega a abrirse.
 export let avisoAuthInicial: string | null = null;
+export let retornoConCredencial = false;
+
+export function anotarAvisoAuth(mensaje: string) {
+  if (!avisoAuthInicial) avisoAuthInicial = mensaje;
+}
 
 function parametrosHash(url: URL): URLSearchParams {
   const texto = url.hash.startsWith("#") ? url.hash.slice(1) : "";
@@ -77,5 +82,11 @@ export function destinoDeRetorno(): string {
 }
 
 if (typeof window !== "undefined") {
+  const actual = new URL(window.location.href);
+  const hashActual = parametrosHash(actual);
+  retornoConCredencial =
+    actual.searchParams.has("code") ||
+    hashActual.has("code") ||
+    hashActual.has("access_token");
   avisoAuthInicial = prepararRetornoDeAuth();
 }

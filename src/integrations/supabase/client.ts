@@ -51,7 +51,10 @@ function createSupabaseClient() {
       storage: typeof window !== 'undefined' ? localStorage : undefined,
       persistSession: true,
       autoRefreshToken: true,
-    }
+      // El regreso de Google trae ?code=. Con el flujo implícito ese código
+      // se ignora y la pantalla de acceso no llega a abrirse.
+      flowType: 'pkce',
+    },
   });
 }
 
