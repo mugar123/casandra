@@ -1,15 +1,17 @@
 import { Link } from "@tanstack/react-router";
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { useHaptic } from "@/hooks/useHaptic";
 import { useSesion } from "@/hooks/useSesion";
-import { Settings, ClipboardList, Lock } from "lucide-react"; 
+import { Lock } from "lucide-react";
+import { BarraNavegacion } from "@/components/BarraNavegacion";
 import { PantallaLogin } from "@/components/PantallaLogin";
 import { PantallaSeleccionClase } from "@/components/PantallaSeleccionClase";
-import { LoaderApp } from "@/components/LoaderApp"; 
+import { LoaderApp } from "@/components/LoaderApp";
 import {
   probabilidad,
   useMercado,
+  volumen,
   type Lado,
   type Pregunta,
 } from "@/hooks/useMercado";
@@ -46,36 +48,17 @@ function Moneda({ className = "" }: { className?: string }) {
   return <span className={`h-3.5 w-3.5 rounded-full bg-moneda ${className}`} />;
 }
 
-// Icono estilo el de compartir de Apple/iOS (square.and.arrow.up):
-// una caja abierta por arriba con una flecha saliendo hacia arriba.
-function IconoCompartirApple({ className = "" }: { className?: string }) {
-  return (
-    <svg
-      className={className}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="M12 16V4" />
-      <path d="M8 8l4-4 4 4" />
-      <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7" />
-    </svg>
-  );
-}
+const PREGUNTAS_EN_HOME = 4;
 
-// Triangulito de toggle estilo Notion
-function IconoTriangulo({ className = "" }: { className?: string }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="currentColor">
-      <path d="M8 5l8 7-8 7V5z" />
-    </svg>
-  );
+function ordenarParaHome(lista: Pregunta[], filtro: "recientes" | "hot") {
+  return [...lista].sort((a, b) => {
+    if (filtro === "hot") {
+      const porGente = volumen(b) - volumen(a);
+      if (porGente !== 0) return porGente;
+    }
+    return b.creadaEn - a.creadaEn;
+  });
 }
-
-const mono = "font-mono text-[11px] uppercase tracking-widest";
 const fuenteApple = { fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif' };
 
 function aValorInputLocal(ts: number): string {
@@ -262,7 +245,7 @@ function EscalaPuntos({ si, no, misSi, misNo }: { si: number; no: number; misSi:
   );
 }
 
-function FilaPregunta({
+export function FilaPregunta({
   pregunta,
   onApostar,
   onRetirar,
@@ -631,30 +614,6 @@ function SaldoAnimado({ valor }: { valor: number }) {
 }
 
 // ============================================================================
-// TOGGLE ESTILO NOTION (triangulito) PARA LA EXPLICACIÓN
-// ============================================================================
-function ToggleInfo({ titulo, children }: { titulo: string; children: React.ReactNode }) {
-  const [abierto, setAbierto] = useState(false);
-
-  return (
-    <div className="mt-4 w-full text-left">
-      <button
-        onClick={() => setAbierto((v) => !v)}
-        style={fuenteApple}
-        className="flex touch-manipulation items-center gap-1.5 text-[16px] leading-relaxed text-sutil transition-colors hover:text-ink active:opacity-60"
-      >
-        <IconoTriangulo
-          className={`h-3 w-3 shrink-0 transition-transform duration-200 ${abierto ? "rotate-90" : ""}`}
-        />
-        {titulo}
-      </button>
-
-      {abierto && <div className="mt-3">{children}</div>}
-    </div>
-  );
-}
-
-// ============================================================================
 // MARKET PAGE CON PULL TO REFRESH NATIVO - ESTILO SPINNER CIRCULAR
 // ============================================================================
 export function MarketPage() {
@@ -663,16 +622,12 @@ export function MarketPage() {
   const haptic = useHaptic();
 
   const [modalAbierto, setModalAbierto] = useState(false);
-  const [copiado, setCopiado] = useState(false);
+  const [filtroHome, setFiltroHome] = useState<"recientes" | "hot">("recientes");
 
   const preguntas = mercado.leerPreguntas({ estado: "todas" }) || [];
   const asignaturas = mercado.leerAsignaturas() || [];
 
   const [rankingFijo, setRankingFijo] = useState<any[]>([]);
-
-  const animRef = useRef<number | null>(null);
-  const scrollContainerRef = useRef<HTMLDivElement>(null);
-  const isProgrammaticScroll = useRef(false);
 
   // ESTADOS PULL TO REFRESH
   const [isPulling, setIsPulling] = useState(false);
@@ -743,7 +698,6 @@ export function MarketPage() {
       try {
         if (typeof mercado.recargar === 'function') {
           await mercado.recargar();
-          setOrdenSnapshot({});
         } else {
           await new Promise(resolve => setTimeout(resolve, 1000));
         }
@@ -775,53 +729,10 @@ export function MarketPage() {
   const [asigActiva, setAsigActiva] = useState<string>("");
   const asigId = asigActiva || (asignaturasOrdenadas[0]?.id || "");
 
-  const [ordenSnapshot, setOrdenSnapshot] = useState<Record<string, string[]>>({});
-
-  useEffect(() => {
-    setOrdenSnapshot((prev) => {
-      const nuevoOrden = { ...prev };
-      let huboCambios = false;
-
-      asignaturasOrdenadas.forEach((a) => {
-        if (!nuevoOrden[a.id]) {
-          nuevoOrden[a.id] = preguntas
-            .filter((p) => p.asignaturaId === a.id && p.resultado === null && !p.archivada)
-            .sort((p1, p2) => probabilidad(p2) - probabilidad(p1))
-            .map((p) => p.id);
-          huboCambios = true;
-        }
-      });
-      return huboCambios ? nuevoOrden : prev;
-    });
-  }, [asignaturasOrdenadas, preguntas]);
-
-  const [alturaContenedor, setAlturaContenedor] = useState<number | 'auto'>('auto');
-
-  useEffect(() => {
-    const container = scrollContainerRef.current;
-    if (!container) return;
-    const activeSlide = container.querySelector(`[data-id="${asigId}"]`) as HTMLElement;
-    if (!activeSlide) return;
-
-    const updateHeight = () => {
-      const height = activeSlide.getBoundingClientRect().height;
-      if (height > 0) {
-        setAlturaContenedor(height);
-      }
-    };
-
-    updateHeight();
-
-    let observer: ResizeObserver | null = null;
-    if (typeof window !== "undefined" && "ResizeObserver" in window) {
-      observer = new ResizeObserver(updateHeight);
-      observer.observe(activeSlide);
-    }
-
-    return () => {
-      if (observer) observer.disconnect();
-    };
-  }, [asigId, ordenSnapshot]);
+  const elegirAsignatura = (id: string) => {
+    haptic();
+    setAsigActiva(id);
+  };
 
   useEffect(() => {
     const bloquearSwipeIOS = (e: TouchEvent) => {
@@ -830,92 +741,6 @@ export function MarketPage() {
     document.addEventListener("touchstart", bloquearSwipeIOS, { passive: false });
     return () => document.removeEventListener("touchstart", bloquearSwipeIOS);
   }, []);
-
-  const detenerAnimacion = () => {
-    if (animRef.current !== null) {
-      cancelAnimationFrame(animRef.current);
-      animRef.current = null;
-      if (scrollContainerRef.current) {
-        scrollContainerRef.current.style.scrollSnapType = ''; 
-        scrollContainerRef.current.style.overflowX = ''; 
-      }
-      isProgrammaticScroll.current = false;
-    }
-  };
-
-  const scrollToAsig = (id: string) => {
-    haptic();
-    setAsigActiva(id); 
-
-    const container = scrollContainerRef.current;
-    if (!container) return;
-
-    const slide = container.querySelector(`[data-id="${id}"]`);
-    if (slide) {
-      detenerAnimacion();
-      isProgrammaticScroll.current = true;
-
-      container.style.scrollSnapType = 'none';
-      container.style.overflowX = 'hidden'; 
-
-      const containerRect = container.getBoundingClientRect();
-      const slideRect = slide.getBoundingClientRect();
-      const startLeft = container.scrollLeft;
-      const targetLeft = startLeft + (slideRect.left - containerRect.left);
-      const distance = targetLeft - startLeft;
-
-      let startTime: number | null = null;
-      const duration = 60; 
-
-      const animarScroll = (currentTime: number) => {
-        if (startTime === null) startTime = currentTime;
-        const timeElapsed = currentTime - startTime;
-        const progress = Math.min(timeElapsed / duration, 1);
-
-        const ease = 1 - Math.pow(1 - progress, 3);
-        container.scrollLeft = startLeft + distance * ease;
-
-        if (progress < 1) {
-          animRef.current = requestAnimationFrame(animarScroll);
-        } else {
-          animRef.current = null;
-          container.style.overflowX = ''; 
-          container.style.scrollSnapType = ''; 
-          setTimeout(() => { isProgrammaticScroll.current = false; }, 10);
-        }
-      };
-
-      animRef.current = requestAnimationFrame(animarScroll);
-    }
-  };
-
-  // -----------------------------------------------------
-  // COMPARTIR APP: usa el menú nativo de compartir (Web Share API)
-  // y si el navegador no lo soporta, copia el enlace al portapapeles.
-  // -----------------------------------------------------
-  const compartirApp = async () => {
-    haptic();
-    const url = window.location.hostname === "localhost"
-      ? "https://casndra.vercel.app" // <-- pon aquí tu URL real de producción
-      : window.location.origin;
-    const datosCompartir = {
-      title: "Casandra",
-      text: "Prueba Casandra, apuesta tokens sobre qué va a caer en el examen.",
-      url,
-    };
-
-    try {
-      if (navigator.share) {
-        await navigator.share(datosCompartir);
-      } else if (navigator.clipboard) {
-        await navigator.clipboard.writeText(url);
-        setCopiado(true);
-        setTimeout(() => setCopiado(false), 2000);
-      }
-    } catch (err) {
-      // El usuario canceló el menú de compartir, o no hay soporte: no hacemos nada.
-    }
-  };
 
   if (cargando) {
     return (
@@ -944,6 +769,10 @@ export function MarketPage() {
   const asigActivaObj = asignaturas.find((a) => a.id === asigId);
   const asigCerrada = asigActivaObj?.cerrada === true;
   const hayAsignaturasAbiertas = asignaturas.some((a) => !a.cerrada);
+  const abiertasDeAsignatura = preguntas.filter(
+    (p) => p.asignaturaId === asigId && p.resultado === null && !p.archivada,
+  );
+  const preguntasHome = ordenarParaHome(abiertasDeAsignatura, filtroHome).slice(0, PREGUNTAS_EN_HOME);
 
   const intentarApostar = (id: string, lado: Lado) => {
     haptic(); 
@@ -1000,22 +829,7 @@ export function MarketPage() {
         }
       `}</style>
 
-      {/* HEADER TOP-BAR */}
-      <header className="relative z-30 bg-lienzo" style={{ paddingTop: "env(safe-area-inset-top)" }}>
-        <div className="mx-auto flex h-14 w-full max-w-[520px] items-center justify-between px-5">
-          <span style={fuenteApple} className="text-[15px] font-bold tracking-tight">Probabilidad fiable?</span>
-          <div className="flex items-center gap-2">
-            {usuario.esAdmin && <Link to={"/admin" as never} className={`${mono} mr-2`}>ADMN</Link>}
-            {esModerador && <Link to={"/mod" as never} className={`${mono} mr-2 text-ink font-bold`}>MOD</Link>}
-            <Link to="/resueltas" className="flex touch-manipulation items-center justify-center p-2 text-ink opacity-100">
-              <ClipboardList className="h-[20px] w-[20px] shrink-0" strokeWidth={2} />
-            </Link>
-            <Link to="/profile" className="flex touch-manipulation items-center justify-center p-2 text-ink opacity-100">
-              <Settings className="h-[20px] w-[20px] shrink-0" strokeWidth={2} />
-            </Link>
-          </div>
-        </div>
-      </header>
+      <BarraNavegacion activa="inicio" esAdmin={usuario.esAdmin} esModerador={esModerador} />
 
       {/* ZONA AISLADA PARA EL PULL TO REFRESH */}
       <div className="relative w-full">
@@ -1057,7 +871,7 @@ export function MarketPage() {
           {/* HEADER PRINCIPAL (SALDO Y CLASIFICACIÓN) */}
           <div className="mx-auto w-full max-w-[520px]">
             {!mercado.pausado && (
-              <div className="mt-8 mb-4 flex flex-col items-center justify-center w-full">
+              <div className="mb-8 mt-12 flex w-full flex-col items-center justify-center">
                 <div className="relative z-10 flex w-full items-center justify-center">
                   <div className="flex flex-1 justify-end pr-1.5">
                     <SaldoAnimado valor={mercado.saldo || 0} />
@@ -1079,97 +893,88 @@ export function MarketPage() {
               </div>
             )}
 
-            <Asignaturas 
+            <Asignaturas
               asignaturas={asignaturasOrdenadas}
-              asigId={asigId} 
-              setAsigActiva={scrollToAsig}
-              preguntas={preguntas} 
+              asigId={asigId}
+              setAsigActiva={elegirAsignatura}
+              preguntas={preguntas}
               saldo={mercado.saldo || 0}
             />
           </div>
 
-          {/* CONTENEDOR DESLIZABLE HORIZONTAL */}
-          <div 
-            ref={scrollContainerRef}
-            onWheel={detenerAnimacion}
-            style={{ height: alturaContenedor === 'auto' ? 'auto' : `${alturaContenedor}px` }}
-            className="flex items-start w-full overflow-x-hidden overflow-y-hidden snap-x snap-mandatory overscroll-x-contain mx-auto max-w-[520px] [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] transition-[height] duration-300 ease-out"
-          >
-            {asignaturasOrdenadas.map((asig) => {
-              const idsOrden = ordenSnapshot[asig.id] || [];
-              const preguntasAsignatura = idsOrden
-                .map((id) => preguntas.find((p) => p.id === id))
-                .filter((p): p is Pregunta => !!p && p.asignaturaId === asig.id && p.resultado === null && !p.archivada);
+          <div className="mx-auto w-full max-w-[520px] px-5">
+            <div className="flex items-center justify-between gap-4 pt-2">
+              <div className="flex rounded-full border border-borde bg-white p-1" role="group" aria-label="Filtrar apuestas">
+                <button
+                  type="button"
+                  onClick={() => setFiltroHome("recientes")}
+                  aria-pressed={filtroHome === "recientes"}
+                  style={fuenteApple}
+                  className={`touch-manipulation rounded-full px-3.5 py-1.5 text-[13px] font-medium ${
+                    filtroHome === "recientes" ? "bg-ink text-white" : "text-sutil"
+                  }`}
+                >
+                  Recientes
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setFiltroHome("hot")}
+                  aria-pressed={filtroHome === "hot"}
+                  style={fuenteApple}
+                  className={`touch-manipulation rounded-full px-3.5 py-1.5 text-[13px] font-medium ${
+                    filtroHome === "hot" ? "bg-ink text-white" : "text-sutil"
+                  }`}
+                >
+                  Hot
+                </button>
+              </div>
+              <Link to="/apuestas" style={fuenteApple} className="shrink-0 text-[13px] font-medium text-sutil underline decoration-sutil/40 underline-offset-4">
+                Ver todas
+              </Link>
+            </div>
+            <p className="mb-2 mt-3 text-[14px] leading-relaxed text-sutil">
+              {filtroHome === "hot" ? "Donde más gente ha votado." : "Las últimas que se han abierto."}
+            </p>
 
-              return (
-                <div key={asig.id} data-id={asig.id} className="snap-slide w-full shrink-0 snap-start px-5 flex flex-col">
-                  {asig.fechaExamen && (
-                    <CountdownExamen fechaExamen={asig.fechaExamen} asignaturaId={asig.id} onEditar={mercado.editarFechaExamenPublica} />
-                  )}
+            {asigActivaObj?.fechaExamen && (
+              <CountdownExamen
+                fechaExamen={asigActivaObj.fechaExamen}
+                asignaturaId={asigId}
+                onEditar={mercado.editarFechaExamenPublica}
+              />
+            )}
 
-                  {preguntasAsignatura.length === 0 ? (
-                    <p className="text-center text-sutil text-[14px] mt-10 mb-4">No hay preguntas abiertas.</p>
-                  ) : (
-                    preguntasAsignatura.map((p, index) => (
-                      <FilaPregunta
-                        key={p.id}
-                        pregunta={p}
-                        bloqueado={mercado.pausado || asig.cerrada} 
-                        sinTokens={(mercado.saldo || 0) < 1}
-                        ocultarBorde={index === preguntasAsignatura.length - 1}
-                        onApostar={(lado) => intentarApostar(p.id, lado)}
-                        onRetirar={() => retirarPregunta(p.id)}
-                      />
-                    ))
-                  )}
+            {preguntasHome.length === 0 ? (
+              <p className="mb-6 mt-8 text-center text-[15px] text-sutil">No hay preguntas abiertas.</p>
+            ) : (
+              preguntasHome.map((p, index) => (
+                <FilaPregunta
+                  key={p.id}
+                  pregunta={p}
+                  bloqueado={mercado.pausado || asigCerrada}
+                  sinTokens={(mercado.saldo || 0) < 1}
+                  ocultarBorde={index === preguntasHome.length - 1}
+                  onApostar={(lado) => intentarApostar(p.id, lado)}
+                  onRetirar={() => retirarPregunta(p.id)}
+                />
+              ))
+            )}
 
-                  {!asig.cerrada && hayAsignaturasAbiertas && (
-                    <div className="mt-4 flex flex-col items-center justify-center w-full">
-                      <div className="mb-12">
-                        <button onClick={() => setModalAbierto(true)} style={fuenteApple} className="flex touch-manipulation items-center gap-2 rounded-full bg-ink px-6 py-3 text-[14px] font-medium text-white shadow-sm transition-transform hover:opacity-90 active:scale-95">
-                          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                            <path d="M12 5v14"></path>
-                            <path d="M5 12h14"></path>
-                          </svg>
-                          Proponer pregunta
-                        </button>
-                      </div>
-
-                      <article className="w-full text-left mb-28">
-                        <button
-                          onClick={compartirApp}
-                          style={fuenteApple}
-                          className="flex touch-manipulation items-center gap-1.5 text-[16px] leading-relaxed text-sutil transition-colors hover:text-ink active:opacity-60"
-                        >
-                          <IconoCompartirApple className="h-4 w-4" />
-                          {copiado ? "enlace copiado" : "compartir la app"}
-                        </button>
-
-                        <ToggleInfo titulo="¿No entiendes cómo funciona? Lee esto.">
-                          <div className="space-y-4 text-[16px] leading-relaxed text-ink">
-                            <p>
-                              Imagina que Fulanito cree que va a caer el ciclo del agua en el examen, porque hace mucho que no cae. Él está muy seguro porque estuvo atento en clase. Apuesta 1 token al SÍ. Sus compañeros Menganito y Zitanito creen que no va a entar, entonces apuestan 1 token cada uno al NO. 
-                            </p>
-                            <p>
-                              La probabilidad de que caiga es del 33% porque esa es la fracción de los participantes creen que va a entrar (1/3). La opinión del grupo queda guardada en ese número.
-                            </p>
-                            <p>
-                            Cuando llega el día del examen, Fulanito tiene razón. Como Fulanito acertó, se lleva los 2 tokens de sus amigos. Fulanito tiene ahora 3 tokens. ¡Es rico!
-                            </p>
-                            <p>
-                            El mercado recompensa al que aporta información verdadera. Casandra es simplemente una máquina que agrega conocimiento colectivo y produce un porcentaje fiable %.
-                            </p>
-                            <p>
-                            Úsalo para consultar la opinión de tu clase.
-                            </p>
-                          </div>
-                        </ToggleInfo>
-                      </article>
-                    </div>
-                  )}
-                </div>
-              );
-            })}
+            {!asigCerrada && hayAsignaturasAbiertas && (
+              <div className="mb-20 mt-10 flex justify-center">
+                <button
+                  onClick={() => setModalAbierto(true)}
+                  style={fuenteApple}
+                  className="flex touch-manipulation items-center gap-2 rounded-full bg-ink px-6 py-3 text-[14px] font-medium text-white shadow-sm transition-transform hover:opacity-90 active:scale-95"
+                >
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M12 5v14"></path>
+                    <path d="M5 12h14"></path>
+                  </svg>
+                  Proponer pregunta
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -1185,10 +990,6 @@ export function MarketPage() {
             if (typeof mercado.recargar === 'function') {
               await mercado.recargar();
             }
-            
-            setOrdenSnapshot({});
-            // Sin scroll al cerrar el modal: la pregunta se añade, y la
-            // vista se queda exactamente donde estaba.
           }}
         />
       )}

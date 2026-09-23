@@ -5,7 +5,10 @@ import { useMercado } from "@/hooks/useMercado";
 import { PantallaLogin } from "@/components/PantallaLogin";
 import { LoaderApp } from "@/components/LoaderApp";
 
-const fuenteApple = { fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif' };
+const fuenteApple = {
+  fontFamily:
+    '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
+};
 
 export function ProfilePage() {
   const { usuario, cargando, entrarConGoogle, salir } = useSesion();
@@ -13,6 +16,30 @@ export function ProfilePage() {
 
   // Estado local para que escribir vaya perfecto sin lag
   const [nombreLocal, setNombreLocal] = useState("");
+  const [copiado, setCopiado] = useState(false);
+
+  const compartirApp = async () => {
+    const url =
+      window.location.hostname === "localhost"
+        ? "https://casndra.vercel.app"
+        : window.location.origin;
+    const datosCompartir = {
+      title: "Casandra",
+      text: "Prueba Casandra, apuesta tokens sobre qué va a caer en el examen.",
+      url,
+    };
+    try {
+      if (navigator.share) {
+        await navigator.share(datosCompartir);
+      } else if (navigator.clipboard) {
+        await navigator.clipboard.writeText(url);
+        setCopiado(true);
+        setTimeout(() => setCopiado(false), 2000);
+      }
+    } catch {
+      // El usuario canceló el menú de compartir.
+    }
+  };
 
   // Sincronizamos el estado local con el real cuando carga la página
   useEffect(() => {
@@ -31,10 +58,12 @@ export function ProfilePage() {
         e.preventDefault();
       }
     };
-    
+
     // Necesitamos { passive: false } para que preventDefault() funcione
-    document.addEventListener("touchstart", bloquearSwipeIOS, { passive: false });
-    
+    document.addEventListener("touchstart", bloquearSwipeIOS, {
+      passive: false,
+    });
+
     return () => {
       document.removeEventListener("touchstart", bloquearSwipeIOS);
     };
@@ -70,13 +99,13 @@ export function ProfilePage() {
 
   return (
     <div className="min-h-screen bg-lienzo pb-28" style={fuenteApple}>
-      <header 
-        className="fixed inset-x-0 top-0 z-20 bg-lienzo/95 backdrop-blur" 
+      <header
+        className="fixed inset-x-0 top-0 z-20 bg-lienzo/95 backdrop-blur"
         style={{ paddingTop: "env(safe-area-inset-top)" }}
       >
         <div className="mx-auto flex h-14 max-w-[520px] items-center px-5">
-          <Link 
-            to="/" 
+          <Link
+            to="/"
             className="flex items-center text-[15px] font-medium tracking-tight text-ink transition-opacity hover:opacity-70 active:opacity-40"
           >
             ← Volver al mercado
@@ -85,16 +114,19 @@ export function ProfilePage() {
       </header>
 
       <main className="mx-auto max-w-[520px] px-5 pt-[calc(4.5rem+env(safe-area-inset-top))]">
-        <h1 className="mb-2 text-[28px] font-bold tracking-tight text-ink">Perfil</h1>
-        
+        <h1 className="mb-2 text-[28px] font-bold tracking-tight text-ink">
+          Perfil
+        </h1>
+
         <div className="mb-6 text-[16px] leading-relaxed text-ink">
           <p>
-            El objetivo de este mercado es agregar información sumando muchas opiniones distintas. Apuesta pensando por tu cuenta. Cuanto más pensamiento individual mejor.
+            El objetivo de este mercado es agregar información sumando muchas
+            opiniones distintas. Apuesta pensando por tu cuenta. Cuanto más
+            pensamiento individual mejor.
           </p>
         </div>
-        
+
         <section className="overflow-hidden rounded-xl border border-borde bg-white shadow-sm">
-          
           {/* Campo Nombre */}
           <div className="flex flex-col border-b border-linea p-4">
             <label className="text-[14px] font-medium text-sutil">
@@ -112,7 +144,16 @@ export function ProfilePage() {
               {/* Icono de Lápiz */}
               {!mercado.perfil.usaHash && (
                 <div className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-sutil/60">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <svg
+                    width="18"
+                    height="18"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
                     <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path>
                   </svg>
                 </div>
@@ -123,10 +164,14 @@ export function ProfilePage() {
           {/* Switch Modo Anónimo */}
           <div className="flex items-center justify-between p-4">
             <div className="flex flex-col">
-              <span className="text-[15px] font-medium text-ink">Sin nombre de usuario</span>
-              <span className="mt-0.5 text-[12px] text-sutil">Ocultar tu nombre a los demás</span>
+              <span className="text-[15px] font-medium text-ink">
+                Sin nombre de usuario
+              </span>
+              <span className="mt-0.5 text-[12px] text-sutil">
+                Ocultar tu nombre a los demás
+              </span>
             </div>
-            
+
             <button
               onClick={() => mercado.usarHash(!mercado.perfil.usaHash)}
               className={`relative inline-flex h-[31px] w-[51px] shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
@@ -138,7 +183,9 @@ export function ProfilePage() {
               <span
                 aria-hidden="true"
                 className={`pointer-events-none inline-block h-[27px] w-[27px] transform rounded-full bg-white shadow-sm ring-0 transition duration-200 ease-in-out ${
-                  mercado.perfil.usaHash ? "translate-x-[20px]" : "translate-x-0"
+                  mercado.perfil.usaHash
+                    ? "translate-x-[20px]"
+                    : "translate-x-0"
                 }`}
               />
             </button>
@@ -155,7 +202,9 @@ export function ProfilePage() {
                 onChange={(e) => mercado.elegirClase(e.target.value)}
                 className="w-full appearance-none rounded-lg border border-borde bg-black/5 px-3 py-2.5 pr-10 text-[16px] font-medium text-ink outline-none transition-colors focus:border-ink/30 focus:bg-white active:bg-black/5"
               >
-                <option value="" disabled>Selecciona tu clase...</option>
+                <option value="" disabled>
+                  Selecciona tu clase...
+                </option>
                 {mercado.leerClases().map((c) => (
                   <option key={c.id} value={c.id}>
                     {c.nombre}
@@ -164,25 +213,42 @@ export function ProfilePage() {
               </select>
               {/* Icono de flecha para el select */}
               <div className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-sutil/60">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <svg
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
                   <path d="M6 9l6 6 6-6"></path>
                 </svg>
               </div>
             </div>
             <p className="mt-2 text-[12px] text-sutil">
-              Cambiar de clase ocultará tus asignaturas actuales y mostrará las nuevas.
-            </p> 
+              Cambiar de clase ocultará tus asignaturas actuales y mostrará las
+              nuevas.
+            </p>
           </div>
-
         </section>
 
         <p className="mt-4 px-2 text-[13px] text-sutil">
-          En el ranking te ven como <span className="font-semibold text-ink">{mercado.miNombre}</span>.
+          En el ranking te ven como{" "}
+          <span className="font-semibold text-ink">{mercado.miNombre}</span>.
         </p>
 
+        <button
+          onClick={() => compartirApp()}
+          className="mt-8 flex w-full touch-manipulation items-center justify-center rounded-xl border border-borde bg-white px-4 py-3.5 text-[15px] font-medium text-ink transition-colors active:bg-black/5"
+        >
+          {copiado ? "Enlace copiado" : "Compartir la app"}
+        </button>
+
         {/* Botón de Logout */}
-        <button 
-          onClick={() => salir()} 
+        <button
+          onClick={() => salir()}
           className="mt-10 flex w-full touch-manipulation items-center justify-center rounded-xl bg-rojo/10 px-4 py-3.5 text-[15px] font-semibold text-rojo transition-colors active:bg-rojo/20"
         >
           Cerrar sesión
@@ -197,9 +263,9 @@ export function ProfilePage() {
         <div className="mt-12 text-center">
           <p className="text-[16px] font-medium leading-relaxed text-ink">
             Hecho por José en 2026.{" "}
-            <a 
-              href="https://joslfer.com" 
-              target="_blank" 
+            <a
+              href="https://joslfer.com"
+              target="_blank"
               rel="noopener noreferrer"
               className="font-semibold underline decoration-ink/30 underline-offset-4 transition-colors hover:text-ink/70"
             >
@@ -207,7 +273,6 @@ export function ProfilePage() {
             </a>
           </p>
         </div>
-
       </main>
     </div>
   );
