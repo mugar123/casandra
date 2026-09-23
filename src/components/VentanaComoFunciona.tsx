@@ -1,11 +1,7 @@
 import { useEffect, useState } from "react";
 
 const CLAVE = "casandra-como-funciona-home";
-
-const fuenteApple = {
-  fontFamily:
-    '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
-};
+let vistoEnEstaSesion = false;
 
 const parrafos = [
   "Imagina que Fulanito cree que va a caer el ciclo del agua en el examen, porque hace mucho que no cae. Él está muy seguro porque estuvo atento en clase. Apuesta 1 token al SÍ. Sus compañeros Menganito y Zitanito creen que no va a entar, entonces apuestan 1 token cada uno al NO.",
@@ -19,11 +15,22 @@ export function VentanaComoFunciona() {
   const [abierta, setAbierta] = useState(false);
 
   useEffect(() => {
+    if (vistoEnEstaSesion) return;
     try {
-      if (!localStorage.getItem(CLAVE)) setAbierta(true);
+      if (localStorage.getItem(CLAVE)) {
+        vistoEnEstaSesion = true;
+        return;
+      }
     } catch {
-      setAbierta(true);
+      // Sin lectura seguimos y lo marcamos en memoria para no reabrirlo.
     }
+    vistoEnEstaSesion = true;
+    try {
+      localStorage.setItem(CLAVE, "1");
+    } catch {
+      // Si el almacenamiento falla, el flag de módulo evita repetirlo en esta sesión.
+    }
+    setAbierta(true);
   }, []);
 
   useEffect(() => {
@@ -36,11 +43,6 @@ export function VentanaComoFunciona() {
   }, [abierta]);
 
   const cerrar = () => {
-    try {
-      localStorage.setItem(CLAVE, "1");
-    } catch {
-      // Si el navegador bloquea el almacenamiento, la ventana se cierra igual.
-    }
     setAbierta(false);
   };
 
@@ -59,7 +61,6 @@ export function VentanaComoFunciona() {
         aria-modal="true"
         aria-labelledby="como-funciona-titulo"
         style={{
-          ...fuenteApple,
           maxHeight: "min(720px, calc(100dvh - 2.5rem))",
         }}
         className="relative flex w-full max-w-[460px] flex-col overflow-hidden rounded-[28px] border border-borde bg-lienzo shadow-[0_24px_80px_rgba(20,16,12,0.28)]"
