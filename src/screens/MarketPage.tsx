@@ -1,15 +1,17 @@
 import { Link } from "@tanstack/react-router";
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { useHaptic } from "@/hooks/useHaptic";
 import { useSesion } from "@/hooks/useSesion";
-import { Settings, ClipboardList, Lock } from "lucide-react"; 
+import { Lock } from "lucide-react";
+import { BarraNavegacion } from "@/components/BarraNavegacion";
 import { PantallaLogin } from "@/components/PantallaLogin";
 import { PantallaSeleccionClase } from "@/components/PantallaSeleccionClase";
-import { LoaderApp } from "@/components/LoaderApp"; 
+import { LoaderApp } from "@/components/LoaderApp";
 import {
   probabilidad,
   useMercado,
+  volumen,
   type Lado,
   type Pregunta,
 } from "@/hooks/useMercado";
@@ -17,7 +19,13 @@ import {
 // ============================================================================
 // SPINNER ESTILO NATIVO IOS (12 barritas)
 // ============================================================================
-function IosSpinner({ className, style }: { className?: string; style?: React.CSSProperties }) {
+function IosSpinner({
+  className,
+  style,
+}: {
+  className?: string;
+  style?: React.CSSProperties;
+}) {
   return (
     <svg
       className={className}
@@ -46,37 +54,21 @@ function Moneda({ className = "" }: { className?: string }) {
   return <span className={`h-3.5 w-3.5 rounded-full bg-moneda ${className}`} />;
 }
 
-// Icono estilo el de compartir de Apple/iOS (square.and.arrow.up):
-// una caja abierta por arriba con una flecha saliendo hacia arriba.
-function IconoCompartirApple({ className = "" }: { className?: string }) {
-  return (
-    <svg
-      className={className}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="M12 16V4" />
-      <path d="M8 8l4-4 4 4" />
-      <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7" />
-    </svg>
-  );
-}
+const PREGUNTAS_EN_HOME = 4;
 
-// Triangulito de toggle estilo Notion
-function IconoTriangulo({ className = "" }: { className?: string }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="currentColor">
-      <path d="M8 5l8 7-8 7V5z" />
-    </svg>
-  );
+function ordenarParaHome(lista: Pregunta[], filtro: "recientes" | "hot") {
+  return [...lista].sort((a, b) => {
+    if (filtro === "hot") {
+      const porGente = volumen(b) - volumen(a);
+      if (porGente !== 0) return porGente;
+    }
+    return b.creadaEn - a.creadaEn;
+  });
 }
-
-const mono = "font-mono text-[11px] uppercase tracking-widest";
-const fuenteApple = { fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif' };
+const fuenteApple = {
+  fontFamily:
+    '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
+};
 
 function aValorInputLocal(ts: number): string {
   const d = new Date(ts);
@@ -84,7 +76,7 @@ function aValorInputLocal(ts: number): string {
   return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}T${pad2(d.getHours())}:${pad2(d.getMinutes())}`;
 }
 
-function CountdownExamen({
+export function CountdownExamen({
   fechaExamen,
   asignaturaId,
   onEditar,
@@ -96,7 +88,9 @@ function CountdownExamen({
   const [restanteMs, setRestanteMs] = useState(() => fechaExamen - Date.now());
   const [mostrarInfo, setMostrarInfo] = useState(false);
   const [editando, setEditando] = useState(false);
-  const [valorInput, setValorInput] = useState(() => aValorInputLocal(fechaExamen));
+  const [valorInput, setValorInput] = useState(() =>
+    aValorInputLocal(fechaExamen),
+  );
   const [guardando, setGuardando] = useState(false);
 
   useEffect(() => {
@@ -146,18 +140,34 @@ function CountdownExamen({
     <article className="relative flex w-full flex-col items-center py-6">
       <div className="flex w-full items-baseline justify-center">
         <span className="flex items-baseline gap-1">
-          <span className="inline-block min-w-[1.4ch] text-right font-mono text-[26px] font-medium leading-none tabular-nums text-ink">{dias}</span>
-          <span className="text-[18px] font-normal leading-none text-sutil">días</span>
+          <span className="inline-block min-w-[1.4ch] text-right font-mono text-[26px] font-medium leading-none tabular-nums text-ink">
+            {dias}
+          </span>
+          <span className="text-[18px] font-normal leading-none text-sutil">
+            días
+          </span>
         </span>
-        <span className="mx-2 font-mono text-[18px] font-medium leading-none text-ink">:</span>
-        <span className="flex items-baseline gap-1">
-          <span className="inline-block min-w-[2ch] text-right font-mono text-[26px] font-medium leading-none tabular-nums text-ink">{horas}</span>
-          <span className="text-[18px] font-normal leading-none text-sutil">horas</span>
+        <span className="mx-2 font-mono text-[18px] font-medium leading-none text-ink">
+          :
         </span>
-        <span className="mx-2 font-mono text-[18px] font-medium leading-none text-ink">:</span>
         <span className="flex items-baseline gap-1">
-          <span className="inline-block min-w-[2ch] text-right font-mono text-[26px] font-medium leading-none tabular-nums text-ink">{min}</span>
-          <span className="text-[18px] font-normal leading-none text-sutil">min</span>
+          <span className="inline-block min-w-[2ch] text-right font-mono text-[26px] font-medium leading-none tabular-nums text-ink">
+            {horas}
+          </span>
+          <span className="text-[18px] font-normal leading-none text-sutil">
+            horas
+          </span>
+        </span>
+        <span className="mx-2 font-mono text-[18px] font-medium leading-none text-ink">
+          :
+        </span>
+        <span className="flex items-baseline gap-1">
+          <span className="inline-block min-w-[2ch] text-right font-mono text-[26px] font-medium leading-none tabular-nums text-ink">
+            {min}
+          </span>
+          <span className="text-[18px] font-normal leading-none text-sutil">
+            min
+          </span>
         </span>
       </div>
 
@@ -168,69 +178,109 @@ function CountdownExamen({
         fecha informativa, puedes corregirla si está mal
       </button>
 
-      {mostrarInfo && createPortal(
-        <div onClick={cerrarPopup} className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/40 p-5 backdrop-blur-sm">
+      {mostrarInfo &&
+        createPortal(
           <div
-            onClick={(e) => e.stopPropagation()}
-            style={fuenteApple}
-            className="w-full max-w-[320px] rounded-lg border border-borde bg-white p-5 text-left text-ink"
+            onClick={cerrarPopup}
+            className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/40 p-5 backdrop-blur-sm"
           >
-            {!editando ? (
-              <>
-                <p className="text-[17px] leading-relaxed text-sutil">Fecha programada</p>
-                <p className="mt-1 text-[17px] leading-relaxed">{fechaFormateada}</p>
-                <p className="mt-4 text-[17px] leading-relaxed text-sutil">Esta fecha es informativa y puede estar equivocada.</p>
-                <div className="mt-5 flex gap-2">
-                  <button onClick={cerrarPopup} className="flex-1 touch-manipulation rounded-lg border border-borde bg-white py-2.5 text-[17px] font-medium text-ink active:bg-black/5">
-                    Cancelar
-                  </button>
-                  <button onClick={() => setEditando(true)} className="flex-1 touch-manipulation rounded-lg bg-ink py-2.5 text-[17px] font-medium text-white active:opacity-70">
-                    Corregir
-                  </button>
-                </div>
-              </>
-            ) : (
-              <>
-                <p className="text-[17px] leading-relaxed text-sutil">Corregir fecha</p>
-                <p className="mt-1 text-[17px] leading-relaxed text-sutil">Cualquiera puede corregir esta fecha si está mal.</p>
-                <input
-                  type="datetime-local"
-                  value={valorInput}
-                  onChange={(e) => setValorInput(e.target.value)}
-                  disabled={guardando}
-                  style={{ fontSize: "17px" }}
-                  className="mt-4 w-full rounded-lg border border-borde bg-white px-3 py-2.5 text-left text-[17px] text-ink outline-none focus:border-ink/40 disabled:opacity-50 select-text"
-                />
-                <div className="mt-5 flex gap-2">
-                  <button onClick={() => setEditando(false)} disabled={guardando} className="flex-1 touch-manipulation rounded-lg border border-borde bg-white py-2.5 text-[17px] font-medium text-ink active:bg-black/5 disabled:opacity-50">
-                    Cancelar
-                  </button>
-                  <button onClick={guardarFecha} disabled={guardando || !valorInput} className="flex-1 touch-manipulation rounded-lg bg-ink py-2.5 text-[17px] font-medium text-white active:opacity-70 disabled:opacity-50">
-                    {guardando ? "Guardando..." : "Guardar"}
-                  </button>
-                </div>
-              </>
-            )}
-          </div>
-        </div>,
-        document.body
-      )}
+            <div
+              onClick={(e) => e.stopPropagation()}
+              style={fuenteApple}
+              className="w-full max-w-[320px] rounded-lg border border-borde bg-white p-5 text-left text-ink"
+            >
+              {!editando ? (
+                <>
+                  <p className="text-[17px] leading-relaxed text-sutil">
+                    Fecha programada
+                  </p>
+                  <p className="mt-1 text-[17px] leading-relaxed">
+                    {fechaFormateada}
+                  </p>
+                  <p className="mt-4 text-[17px] leading-relaxed text-sutil">
+                    Esta fecha es informativa y puede estar equivocada.
+                  </p>
+                  <div className="mt-5 flex gap-2">
+                    <button
+                      onClick={cerrarPopup}
+                      className="flex-1 touch-manipulation rounded-lg border border-borde bg-white py-2.5 text-[17px] font-medium text-ink active:bg-black/5"
+                    >
+                      Cancelar
+                    </button>
+                    <button
+                      onClick={() => setEditando(true)}
+                      className="flex-1 touch-manipulation rounded-lg bg-ink py-2.5 text-[17px] font-medium text-white active:opacity-70"
+                    >
+                      Corregir
+                    </button>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <p className="text-[17px] leading-relaxed text-sutil">
+                    Corregir fecha
+                  </p>
+                  <p className="mt-1 text-[17px] leading-relaxed text-sutil">
+                    Cualquiera puede corregir esta fecha si está mal.
+                  </p>
+                  <input
+                    type="datetime-local"
+                    value={valorInput}
+                    onChange={(e) => setValorInput(e.target.value)}
+                    disabled={guardando}
+                    style={{ fontSize: "17px" }}
+                    className="mt-4 w-full rounded-lg border border-borde bg-white px-3 py-2.5 text-left text-[17px] text-ink outline-none focus:border-ink/40 disabled:opacity-50 select-text"
+                  />
+                  <div className="mt-5 flex gap-2">
+                    <button
+                      onClick={() => setEditando(false)}
+                      disabled={guardando}
+                      className="flex-1 touch-manipulation rounded-lg border border-borde bg-white py-2.5 text-[17px] font-medium text-ink active:bg-black/5 disabled:opacity-50"
+                    >
+                      Cancelar
+                    </button>
+                    <button
+                      onClick={guardarFecha}
+                      disabled={guardando || !valorInput}
+                      className="flex-1 touch-manipulation rounded-lg bg-ink py-2.5 text-[17px] font-medium text-white active:opacity-70 disabled:opacity-50"
+                    >
+                      {guardando ? "Guardando..." : "Guardar"}
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
+          </div>,
+          document.body,
+        )}
     </article>
   );
 }
 
-function EscalaPuntos({ si, no, misSi, misNo }: { si: number; no: number; misSi: number; misNo: number; }) {
+function EscalaPuntos({
+  si,
+  no,
+  misSi,
+  misNo,
+}: {
+  si: number;
+  no: number;
+  misSi: number;
+  misNo: number;
+}) {
   const safeSi = si || 0;
   const safeNo = no || 0;
   const safeMisSi = misSi || 0;
   const safeMisNo = misNo || 0;
-  
+
   const total = safeSi + safeNo;
 
   if (total === 0) {
     return (
       <div className="mt-2.5 flex min-h-[16px] items-center">
-        <p className="font-mono text-[11px] leading-none text-sutil">esperando apuestas</p>
+        <p className="font-mono text-[11px] leading-none text-sutil">
+          esperando apuestas
+        </p>
       </div>
     );
   }
@@ -243,18 +293,30 @@ function EscalaPuntos({ si, no, misSi, misNo }: { si: number; no: number; misSi:
       <div className="flex w-full gap-4 items-start" aria-hidden="true">
         <div className="flex flex-1 flex-wrap content-start items-start justify-start gap-1">
           {Array.from({ length: otrosNo }).map((_, i) => (
-            <span key={`no-o-${i}`} className="block h-2 w-2 shrink-0 rounded-full bg-rojo" />
+            <span
+              key={`no-o-${i}`}
+              className="block h-2 w-2 shrink-0 rounded-full bg-rojo"
+            />
           ))}
           {Array.from({ length: safeMisNo }).map((_, i) => (
-            <span key={`no-m-${i}`} className="block h-2 w-2 shrink-0 rounded-full bg-moneda" />
+            <span
+              key={`no-m-${i}`}
+              className="block h-2 w-2 shrink-0 rounded-full bg-moneda"
+            />
           ))}
         </div>
         <div className="flex flex-1 flex-wrap flex-row-reverse content-start items-start gap-1">
           {Array.from({ length: otrosSi }).map((_, i) => (
-            <span key={`si-o-${i}`} className="block h-2 w-2 shrink-0 rounded-full bg-verde" />
+            <span
+              key={`si-o-${i}`}
+              className="block h-2 w-2 shrink-0 rounded-full bg-verde"
+            />
           ))}
           {Array.from({ length: safeMisSi }).map((_, i) => (
-            <span key={`si-m-${i}`} className="block h-2 w-2 shrink-0 rounded-full bg-moneda" />
+            <span
+              key={`si-m-${i}`}
+              className="block h-2 w-2 shrink-0 rounded-full bg-moneda"
+            />
           ))}
         </div>
       </div>
@@ -262,20 +324,22 @@ function EscalaPuntos({ si, no, misSi, misNo }: { si: number; no: number; misSi:
   );
 }
 
-function FilaPregunta({
+export function FilaPregunta({
   pregunta,
   onApostar,
   onRetirar,
   bloqueado,
   sinTokens,
   ocultarBorde,
+  contexto,
 }: {
   pregunta: Pregunta;
   onApostar: (lado: Lado) => void;
   onRetirar: () => void;
-  bloqueado?: boolean;
+  bloqueado?: boolean | undefined;
   sinTokens?: boolean;
   ocultarBorde?: boolean;
+  contexto?: string | undefined;
 }) {
   const prob = probabilidad(pregunta);
   const totalApuestas = (pregunta.poolSi || 0) + (pregunta.poolNo || 0);
@@ -295,7 +359,7 @@ function FilaPregunta({
         { transform: "scale(0.97)", offset: 0.75 },
         { transform: "scale(1)" },
       ],
-      { duration: 420, easing: "cubic-bezier(0.22, 0.9, 0.32, 1)" }
+      { duration: 420, easing: "cubic-bezier(0.22, 0.9, 0.32, 1)" },
     );
   };
 
@@ -308,18 +372,33 @@ function FilaPregunta({
   };
 
   const visuallyBlocked = bloqueado && !cooldown;
-  const btnBase = "flex flex-1 h-[42px] touch-manipulation items-center justify-center gap-2 rounded-lg border px-3 text-[14px] font-medium transition-all duration-150 ease-out";
+  const btnBase =
+    "flex flex-1 h-[42px] touch-manipulation items-center justify-center gap-2 rounded-lg border px-3 text-[14px] font-medium transition-all duration-150 ease-out";
 
   return (
-    <article className={`py-6 w-full ${ocultarBorde ? "" : "border-b border-linea"}`}>
+    <article
+      className={`py-6 w-full ${ocultarBorde ? "" : "border-b border-linea"}`}
+    >
+      {contexto && (
+        <p className="mb-1 text-[12px] font-medium text-sutil">{contexto}</p>
+      )}
       <div className="flex items-start justify-between gap-4">
-        <h2 className="min-w-0 flex-1 break-words text-[19px] font-medium leading-snug text-ink">{pregunta.titulo}</h2>
-        <span className={`shrink-0 font-mono text-[30px] leading-none tabular-nums ${!tieneApuestas ? "text-sutil" : positivo ? "text-verde" : "text-rojo"}`}>
+        <h2 className="min-w-0 flex-1 break-words text-[19px] font-medium leading-snug text-ink">
+          {pregunta.titulo}
+        </h2>
+        <span
+          className={`shrink-0 font-mono text-[30px] leading-none tabular-nums ${!tieneApuestas ? "text-sutil" : positivo ? "text-verde" : "text-rojo"}`}
+        >
           {tieneApuestas ? `${prob}%` : "--%"}
         </span>
       </div>
 
-      <EscalaPuntos si={pregunta.poolSi} no={pregunta.poolNo} misSi={pregunta.misSi} misNo={pregunta.misNo} />
+      <EscalaPuntos
+        si={pregunta.poolSi}
+        no={pregunta.poolNo}
+        misSi={pregunta.misSi}
+        misNo={pregunta.misNo}
+      />
 
       <div className="mt-3 flex gap-2">
         <button
@@ -330,7 +409,11 @@ function FilaPregunta({
           className={`${btnBase} ${visuallyBlocked ? "opacity-40" : "active:scale-[0.93]"} ${(pregunta.misNo || 0) > 0 ? "border-rojo bg-rojo text-white" : sinTokens ? "border-linea bg-black/5 text-sutil" : "border-borde bg-white text-ink hover:border-ink/30"}`}
         >
           <span>NO</span>
-          {(pregunta.misNo || 0) > 0 && <span className="font-mono text-[16px] font-semibold tabular-nums">· {pregunta.misNo}</span>}
+          {(pregunta.misNo || 0) > 0 && (
+            <span className="font-mono text-[16px] font-semibold tabular-nums">
+              · {pregunta.misNo}
+            </span>
+          )}
         </button>
         <button
           data-apuesta
@@ -340,7 +423,11 @@ function FilaPregunta({
           className={`${btnBase} ${visuallyBlocked ? "opacity-40" : "active:scale-[0.93]"} ${(pregunta.misSi || 0) > 0 ? "border-verde bg-verde text-white" : sinTokens ? "border-linea bg-black/5 text-sutil" : "border-borde bg-white text-ink hover:border-ink/30"}`}
         >
           <span>SÍ</span>
-          {(pregunta.misSi || 0) > 0 && <span className="font-mono text-[16px] font-semibold tabular-nums">· {pregunta.misSi}</span>}
+          {(pregunta.misSi || 0) > 0 && (
+            <span className="font-mono text-[16px] font-semibold tabular-nums">
+              · {pregunta.misSi}
+            </span>
+          )}
         </button>
       </div>
 
@@ -358,14 +445,19 @@ function FilaPregunta({
   );
 }
 
-function Asignaturas({
+export function Asignaturas({
   asignaturas,
   asigId,
   setAsigActiva,
   preguntas,
   saldo,
 }: {
-  asignaturas: Array<{ id: string; nombre: string; cerrada?: boolean; fechaExamen?: number | null }>;
+  asignaturas: Array<{
+    id: string;
+    nombre: string;
+    cerrada?: boolean;
+    fechaExamen?: number | null;
+  }>;
   asigId: string;
   setAsigActiva: (id: string) => void;
   preguntas: Pregunta[];
@@ -375,7 +467,11 @@ function Asignaturas({
     <div className="flex flex-wrap justify-center gap-2 pb-6 pt-2 px-5">
       {asignaturas.map((a) => {
         const sinApostar = preguntas.filter(
-          (p) => p.asignaturaId === a.id && p.resultado === null && !p.archivada && (p.misSi || 0) + (p.misNo || 0) === 0
+          (p) =>
+            p.asignaturaId === a.id &&
+            p.resultado === null &&
+            !p.archivada &&
+            (p.misSi || 0) + (p.misNo || 0) === 0,
         ).length;
 
         return (
@@ -384,7 +480,9 @@ function Asignaturas({
             onClick={() => setAsigActiva(a.id)}
             style={fuenteApple}
             className={`relative touch-manipulation whitespace-nowrap rounded-full border flex items-center gap-1.5 px-3.5 py-1.5 text-[13px] font-medium transition-colors active:opacity-70 ${
-              a.id === asigId ? "border-ink bg-ink text-white" : "border-borde bg-white text-ink hover:border-ink/30"
+              a.id === asigId
+                ? "border-ink bg-ink text-white"
+                : "border-borde bg-white text-ink hover:border-ink/30"
             }`}
           >
             <span>{a.nombre}</span>
@@ -418,7 +516,10 @@ function PantallaNuevaPregunta({
   const [cargando, setCargando] = useState(false);
 
   const enviar = async () => {
-    if (!titulo.trim()) { setError("Escribe un enunciado"); return; }
+    if (!titulo.trim()) {
+      setError("Escribe un enunciado");
+      return;
+    }
     try {
       setCargando(true);
       setError(null);
@@ -433,17 +534,53 @@ function PantallaNuevaPregunta({
   };
 
   return (
-    <div className="fixed inset-0 z-40 flex flex-col bg-lienzo" style={{ height: "100dvh" }}>
-      <header className="flex shrink-0 items-center justify-between border-b border-linea px-4" style={{ paddingTop: "calc(env(safe-area-inset-top) + 0.75rem)", paddingBottom: "0.75rem" }}>
-        <button onClick={onCerrar} disabled={cargando} style={fuenteApple} className="touch-manipulation px-1 py-1 text-[17px] text-ink disabled:opacity-40">Cancelar</button>
-        <span style={fuenteApple} className="text-[15px] font-semibold text-ink">Nueva pregunta</span>
-        <button onClick={enviar} disabled={cargando || !titulo.trim()} style={fuenteApple} className="touch-manipulation px-1 py-1 text-[17px] font-semibold text-ink disabled:opacity-30">{cargando ? "..." : "Publicar"}</button>
+    <div
+      className="fixed inset-0 z-40 flex flex-col bg-lienzo"
+      style={{ height: "100dvh" }}
+    >
+      <header
+        className="flex shrink-0 items-center justify-between border-b border-linea px-4"
+        style={{
+          paddingTop: "calc(env(safe-area-inset-top) + 0.75rem)",
+          paddingBottom: "0.75rem",
+        }}
+      >
+        <button
+          onClick={onCerrar}
+          disabled={cargando}
+          style={fuenteApple}
+          className="touch-manipulation px-1 py-1 text-[17px] text-ink disabled:opacity-40"
+        >
+          Cancelar
+        </button>
+        <span
+          style={fuenteApple}
+          className="text-[15px] font-semibold text-ink"
+        >
+          Nueva pregunta
+        </span>
+        <button
+          onClick={enviar}
+          disabled={cargando || !titulo.trim()}
+          style={fuenteApple}
+          className="touch-manipulation px-1 py-1 text-[17px] font-semibold text-ink disabled:opacity-30"
+        >
+          {cargando ? "..." : "Publicar"}
+        </button>
       </header>
-      <div className="flex-1 overflow-y-auto px-5 py-6" style={{ WebkitOverflowScrolling: "touch" }}>
-        <h1 style={fuenteApple} className="text-[15px] font-semibold text-ink">Cuanto más específica mejor, frases largas.</h1>
+      <div
+        className="flex-1 overflow-y-auto px-5 py-6"
+        style={{ WebkitOverflowScrolling: "touch" }}
+      >
+        <h1 style={fuenteApple} className="text-[15px] font-semibold text-ink">
+          Cuanto más específica mejor, frases largas.
+        </h1>
         <textarea
           value={titulo}
-          onChange={(e) => { setTitulo(e.target.value); if (error) setError(null); }}
+          onChange={(e) => {
+            setTitulo(e.target.value);
+            if (error) setError(null);
+          }}
           disabled={cargando}
           autoFocus
           rows={4}
@@ -451,7 +588,12 @@ function PantallaNuevaPregunta({
           style={{ fontSize: "16px" }}
           className="mt-3 w-full resize-none rounded-md border border-borde bg-white px-3 py-2.5 text-ink outline-none focus:border-ink/40 disabled:opacity-50 select-text"
         />
-        <p style={fuenteApple} className="mt-5 text-[13px] font-medium text-sutil">Examen</p>
+        <p
+          style={fuenteApple}
+          className="mt-5 text-[13px] font-medium text-sutil"
+        >
+          Examen
+        </p>
         <div className="mt-2 flex flex-wrap gap-2">
           {asignaturas.map((a) => (
             <button
@@ -471,11 +613,20 @@ function PantallaNuevaPregunta({
   );
 }
 
-function BotonRankingDinamico({ rankingFijo, miNombre }: { rankingFijo: any[]; miNombre: string }) {
+function BotonRankingDinamico({
+  rankingFijo,
+  miNombre,
+}: {
+  rankingFijo: any[];
+  miNombre: string;
+}) {
   if (rankingFijo.length === 0) {
     return (
       <div className="mt-4 flex w-full justify-center px-4">
-        <Link to="/ranking" className="text-[17px] text-ink/90 transition-colors hover:text-ink text-left">
+        <Link
+          to="/ranking"
+          className="text-[17px] text-ink/90 transition-colors hover:text-ink text-left"
+        >
           ver clasificación global →
         </Link>
       </div>
@@ -487,7 +638,10 @@ function BotonRankingDinamico({ rankingFijo, miNombre }: { rankingFijo: any[]; m
   if (miIndice === -1) {
     return (
       <div className="mt-4 flex w-full justify-center px-4">
-        <Link to="/ranking" className="text-[17px] text-ink/90 transition-colors hover:text-ink text-left">
+        <Link
+          to="/ranking"
+          className="text-[17px] text-ink/90 transition-colors hover:text-ink text-left"
+        >
           ver clasificación global →
         </Link>
       </div>
@@ -497,42 +651,76 @@ function BotonRankingDinamico({ rankingFijo, miNombre }: { rankingFijo: any[]; m
   const miPosicion = miIndice + 1;
   const yo = rankingFijo[miIndice];
 
-  const empatadosConmigo = rankingFijo.filter(r => r.tokens === yo.tokens && r.usuario !== miNombre);
+  const empatadosConmigo = rankingFijo.filter(
+    (r) => r.tokens === yo.tokens && r.usuario !== miNombre,
+  );
   const esEmpate = empatadosConmigo.length > 0;
   const compañeroEmpate = empatadosConmigo[0];
 
-  const personasEncima = rankingFijo.filter(r => r.tokens > yo.tokens);
-  const maxScoreEncima = personasEncima.length > 0 ? Math.max(...personasEncima.map(r => r.tokens)) : null;
-  const grupoEncima = maxScoreEncima !== null ? personasEncima.filter(r => r.tokens === maxScoreEncima) : [];
+  const personasEncima = rankingFijo.filter((r) => r.tokens > yo.tokens);
+  const maxScoreEncima =
+    personasEncima.length > 0
+      ? Math.max(...personasEncima.map((r) => r.tokens))
+      : null;
+  const grupoEncima =
+    maxScoreEncima !== null
+      ? personasEncima.filter((r) => r.tokens === maxScoreEncima)
+      : [];
   const elDeArriba = grupoEncima[0];
-  
-  const faltan = maxScoreEncima !== null ? (maxScoreEncima - yo.tokens) + 1 : 1;
-  const todosCero = rankingFijo.every(r => r.tokens === 0);
+
+  const faltan = maxScoreEncima !== null ? maxScoreEncima - yo.tokens + 1 : 1;
+  const todosCero = rankingFijo.every((r) => r.tokens === 0);
 
   return (
     <div className="mt-5 flex w-full justify-center px-4">
-      <Link to="/ranking" className="group relative inline-block max-w-[340px] text-left transition-colors">
+      <Link
+        to="/ranking"
+        className="group relative inline-block max-w-[340px] text-left transition-colors"
+      >
         <div className="text-[17px] text-ink/90 leading-snug break-words group-hover:text-ink transition-colors">
           {todosCero ? (
             <>Nadie ha sumado tokens todavía</>
           ) : (
             <>
-              Vas <strong className="font-semibold text-ink">#{miPosicion}</strong>
+              Vas{" "}
+              <strong className="font-semibold text-ink">#{miPosicion}</strong>
               {miPosicion === 1 && !esEmpate ? (
                 <>. ¡Gracias por tu precisión!</>
               ) : miPosicion === 1 && esEmpate ? (
-                <>, empatado en el primer puesto con <strong className="font-medium text-ink">{compañeroEmpate?.usuario}</strong></>
+                <>
+                  , empatado en el primer puesto con{" "}
+                  <strong className="font-medium text-ink">
+                    {compañeroEmpate?.usuario}
+                  </strong>
+                </>
               ) : esEmpate ? (
-                <>, empatado con <strong className="font-medium text-ink">{compañeroEmpate?.usuario}</strong></>
+                <>
+                  , empatado con{" "}
+                  <strong className="font-medium text-ink">
+                    {compañeroEmpate?.usuario}
+                  </strong>
+                </>
               ) : (
-                <>, a <span className="inline-flex items-center gap-0.5 font-mono font-bold text-ink">{faltan} <Moneda className="h-[14px] w-[14px] -mt-0.5" /></span> de <strong className="font-medium text-ink">{elDeArriba?.usuario}</strong></>
+                <>
+                  , a{" "}
+                  <span className="inline-flex items-center gap-0.5 font-mono font-bold text-ink">
+                    {faltan} <Moneda className="h-[14px] w-[14px] -mt-0.5" />
+                  </span>{" "}
+                  de{" "}
+                  <strong className="font-medium text-ink">
+                    {elDeArriba?.usuario}
+                  </strong>
+                </>
               )}
             </>
           )}
           <br />
           <span className="underline decoration-sutil/50 underline-offset-4 group-hover:decoration-ink/80 transition-colors">
             mira la clasificación
-          </span> <span className="inline-block transition-transform group-hover:translate-x-1">→</span>
+          </span>{" "}
+          <span className="inline-block transition-transform group-hover:translate-x-1">
+            →
+          </span>
         </div>
       </Link>
     </div>
@@ -545,10 +733,13 @@ function SaldoAnimado({ valor }: { valor: number }) {
   const floatValRef = useRef(valor);
   const animRef = useRef<number | null>(null);
 
-  const [maxLen, setMaxLen] = useState(() => Math.floor(Math.abs(valor)).toString().length + (valor < 0 ? 1 : 0));
+  const [maxLen, setMaxLen] = useState(
+    () => Math.floor(Math.abs(valor)).toString().length + (valor < 0 ? 1 : 0),
+  );
 
   useEffect(() => {
-    const curLen = Math.floor(Math.abs(valor)).toString().length + (valor < 0 ? 1 : 0);
+    const curLen =
+      Math.floor(Math.abs(valor)).toString().length + (valor < 0 ? 1 : 0);
     if (curLen > maxLen) {
       setMaxLen(curLen);
     }
@@ -570,7 +761,7 @@ function SaldoAnimado({ valor }: { valor: number }) {
 
       const ease = 1 - Math.pow(1 - progress, 3);
       const currentFloat = startVal + (endVal - startVal) * ease;
-      
+
       floatValRef.current = currentFloat;
       setRenderVal(currentFloat);
 
@@ -621,36 +812,15 @@ function SaldoAnimado({ valor }: { valor: number }) {
         }}
       >
         {items.map((num) => (
-          <span key={num} className="flex h-[1em] w-full items-center justify-end whitespace-nowrap">
+          <span
+            key={num}
+            className="flex h-[1em] w-full items-center justify-end whitespace-nowrap"
+          >
             {num}
           </span>
         ))}
       </span>
     </span>
-  );
-}
-
-// ============================================================================
-// TOGGLE ESTILO NOTION (triangulito) PARA LA EXPLICACIÓN
-// ============================================================================
-function ToggleInfo({ titulo, children }: { titulo: string; children: React.ReactNode }) {
-  const [abierto, setAbierto] = useState(false);
-
-  return (
-    <div className="mt-4 w-full text-left">
-      <button
-        onClick={() => setAbierto((v) => !v)}
-        style={fuenteApple}
-        className="flex touch-manipulation items-center gap-1.5 text-[16px] leading-relaxed text-sutil transition-colors hover:text-ink active:opacity-60"
-      >
-        <IconoTriangulo
-          className={`h-3 w-3 shrink-0 transition-transform duration-200 ${abierto ? "rotate-90" : ""}`}
-        />
-        {titulo}
-      </button>
-
-      {abierto && <div className="mt-3">{children}</div>}
-    </div>
   );
 }
 
@@ -663,23 +833,21 @@ export function MarketPage() {
   const haptic = useHaptic();
 
   const [modalAbierto, setModalAbierto] = useState(false);
-  const [copiado, setCopiado] = useState(false);
+  const [filtroHome, setFiltroHome] = useState<"recientes" | "hot">(
+    "recientes",
+  );
 
   const preguntas = mercado.leerPreguntas({ estado: "todas" }) || [];
   const asignaturas = mercado.leerAsignaturas() || [];
 
   const [rankingFijo, setRankingFijo] = useState<any[]>([]);
 
-  const animRef = useRef<number | null>(null);
-  const scrollContainerRef = useRef<HTMLDivElement>(null);
-  const isProgrammaticScroll = useRef(false);
-
   // ESTADOS PULL TO REFRESH
   const [isPulling, setIsPulling] = useState(false);
   const [pullDistance, setPullDistance] = useState(0);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const mainContainerRef = useRef<HTMLDivElement>(null);
-  
+
   const pullStartY = useRef(0);
   const pullStartX = useRef(0);
   const isVerticalSwipe = useRef<boolean | null>(null);
@@ -710,7 +878,10 @@ export function MarketPage() {
     const diffY = currentY - pullStartY.current;
     const diffX = currentX - pullStartX.current;
 
-    if (isVerticalSwipe.current === null && (Math.abs(diffX) > 5 || Math.abs(diffY) > 5)) {
+    if (
+      isVerticalSwipe.current === null &&
+      (Math.abs(diffX) > 5 || Math.abs(diffY) > 5)
+    ) {
       isVerticalSwipe.current = Math.abs(diffY) > Math.abs(diffX);
     }
 
@@ -738,17 +909,19 @@ export function MarketPage() {
     if (pullDistance >= REFRESH_THRESHOLD && !isRefreshing) {
       haptic();
       setIsRefreshing(true);
-      setPullDistance(SPINNER_OFFSET); 
+      setPullDistance(SPINNER_OFFSET);
 
       try {
-        if (typeof mercado.recargar === 'function') {
+        if (typeof mercado.recargar === "function") {
           await mercado.recargar();
-          setOrdenSnapshot({});
         } else {
-          await new Promise(resolve => setTimeout(resolve, 1000));
+          await new Promise((resolve) => setTimeout(resolve, 1000));
         }
       } finally {
-        mainContainerRef.current?.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior });
+        mainContainerRef.current?.scrollTo({
+          top: 0,
+          behavior: "instant" as ScrollBehavior,
+        });
         setIsRefreshing(false);
         setPullDistance(0);
       }
@@ -772,150 +945,15 @@ export function MarketPage() {
     return a.fechaExamen - b.fechaExamen;
   });
 
-  const [asigActiva, setAsigActiva] = useState<string>("");
-  const asigId = asigActiva || (asignaturasOrdenadas[0]?.id || "");
-
-  const [ordenSnapshot, setOrdenSnapshot] = useState<Record<string, string[]>>({});
-
-  useEffect(() => {
-    setOrdenSnapshot((prev) => {
-      const nuevoOrden = { ...prev };
-      let huboCambios = false;
-
-      asignaturasOrdenadas.forEach((a) => {
-        if (!nuevoOrden[a.id]) {
-          nuevoOrden[a.id] = preguntas
-            .filter((p) => p.asignaturaId === a.id && p.resultado === null && !p.archivada)
-            .sort((p1, p2) => probabilidad(p2) - probabilidad(p1))
-            .map((p) => p.id);
-          huboCambios = true;
-        }
-      });
-      return huboCambios ? nuevoOrden : prev;
-    });
-  }, [asignaturasOrdenadas, preguntas]);
-
-  const [alturaContenedor, setAlturaContenedor] = useState<number | 'auto'>('auto');
-
-  useEffect(() => {
-    const container = scrollContainerRef.current;
-    if (!container) return;
-    const activeSlide = container.querySelector(`[data-id="${asigId}"]`) as HTMLElement;
-    if (!activeSlide) return;
-
-    const updateHeight = () => {
-      const height = activeSlide.getBoundingClientRect().height;
-      if (height > 0) {
-        setAlturaContenedor(height);
-      }
-    };
-
-    updateHeight();
-
-    let observer: ResizeObserver | null = null;
-    if (typeof window !== "undefined" && "ResizeObserver" in window) {
-      observer = new ResizeObserver(updateHeight);
-      observer.observe(activeSlide);
-    }
-
-    return () => {
-      if (observer) observer.disconnect();
-    };
-  }, [asigId, ordenSnapshot]);
-
   useEffect(() => {
     const bloquearSwipeIOS = (e: TouchEvent) => {
       if (e.touches[0].clientX < 25) e.preventDefault();
     };
-    document.addEventListener("touchstart", bloquearSwipeIOS, { passive: false });
+    document.addEventListener("touchstart", bloquearSwipeIOS, {
+      passive: false,
+    });
     return () => document.removeEventListener("touchstart", bloquearSwipeIOS);
   }, []);
-
-  const detenerAnimacion = () => {
-    if (animRef.current !== null) {
-      cancelAnimationFrame(animRef.current);
-      animRef.current = null;
-      if (scrollContainerRef.current) {
-        scrollContainerRef.current.style.scrollSnapType = ''; 
-        scrollContainerRef.current.style.overflowX = ''; 
-      }
-      isProgrammaticScroll.current = false;
-    }
-  };
-
-  const scrollToAsig = (id: string) => {
-    haptic();
-    setAsigActiva(id); 
-
-    const container = scrollContainerRef.current;
-    if (!container) return;
-
-    const slide = container.querySelector(`[data-id="${id}"]`);
-    if (slide) {
-      detenerAnimacion();
-      isProgrammaticScroll.current = true;
-
-      container.style.scrollSnapType = 'none';
-      container.style.overflowX = 'hidden'; 
-
-      const containerRect = container.getBoundingClientRect();
-      const slideRect = slide.getBoundingClientRect();
-      const startLeft = container.scrollLeft;
-      const targetLeft = startLeft + (slideRect.left - containerRect.left);
-      const distance = targetLeft - startLeft;
-
-      let startTime: number | null = null;
-      const duration = 60; 
-
-      const animarScroll = (currentTime: number) => {
-        if (startTime === null) startTime = currentTime;
-        const timeElapsed = currentTime - startTime;
-        const progress = Math.min(timeElapsed / duration, 1);
-
-        const ease = 1 - Math.pow(1 - progress, 3);
-        container.scrollLeft = startLeft + distance * ease;
-
-        if (progress < 1) {
-          animRef.current = requestAnimationFrame(animarScroll);
-        } else {
-          animRef.current = null;
-          container.style.overflowX = ''; 
-          container.style.scrollSnapType = ''; 
-          setTimeout(() => { isProgrammaticScroll.current = false; }, 10);
-        }
-      };
-
-      animRef.current = requestAnimationFrame(animarScroll);
-    }
-  };
-
-  // -----------------------------------------------------
-  // COMPARTIR APP: usa el menú nativo de compartir (Web Share API)
-  // y si el navegador no lo soporta, copia el enlace al portapapeles.
-  // -----------------------------------------------------
-  const compartirApp = async () => {
-    haptic();
-    const url = window.location.hostname === "localhost"
-      ? "https://casndra.vercel.app" // <-- pon aquí tu URL real de producción
-      : window.location.origin;
-    const datosCompartir = {
-      title: "Casandra",
-      text: "Prueba Casandra, apuesta tokens sobre qué va a caer en el examen.",
-      url,
-    };
-
-    try {
-      if (navigator.share) {
-        await navigator.share(datosCompartir);
-      } else if (navigator.clipboard) {
-        await navigator.clipboard.writeText(url);
-        setCopiado(true);
-        setTimeout(() => setCopiado(false), 2000);
-      }
-    } catch (err) {
-      // El usuario canceló el menú de compartir, o no hay soporte: no hacemos nada.
-    }
-  };
 
   if (cargando) {
     return (
@@ -938,27 +976,48 @@ export function MarketPage() {
   }
 
   if (!mercado.perfil.claseId) {
-    return <PantallaSeleccionClase clases={mercado.leerClases()} onElegir={mercado.elegirClase} />;
+    return (
+      <PantallaSeleccionClase
+        clases={mercado.leerClases()}
+        onElegir={mercado.elegirClase}
+      />
+    );
   }
 
-  const asigActivaObj = asignaturas.find((a) => a.id === asigId);
-  const asigCerrada = asigActivaObj?.cerrada === true;
   const hayAsignaturasAbiertas = asignaturas.some((a) => !a.cerrada);
+  const primeraAbierta = asignaturasOrdenadas.find((a) => !a.cerrada)?.id ?? "";
+  const abiertas = preguntas.filter(
+    (p) => p.resultado === null && !p.archivada,
+  );
+  const preguntasHome = ordenarParaHome(abiertas, filtroHome).slice(
+    0,
+    PREGUNTAS_EN_HOME,
+  );
+  const nombreAsignatura = (id: string) =>
+    asignaturas.find((a) => a.id === id)?.nombre;
+  const asignaturaCerrada = (id: string) =>
+    asignaturas.find((a) => a.id === id)?.cerrada === true;
 
   const intentarApostar = (id: string, lado: Lado) => {
-    haptic(); 
+    haptic();
     if ((mercado.saldo || 0) < 1) {
-      document.body.animate([
-        { transform: "translateX(0)" }, { transform: "translateX(-7px)" },
-        { transform: "translateX(6px)" }, { transform: "translateX(-4px)" }, { transform: "translateX(0)" }
-      ], { duration: 280, easing: "ease-in-out" });
+      document.body.animate(
+        [
+          { transform: "translateX(0)" },
+          { transform: "translateX(-7px)" },
+          { transform: "translateX(6px)" },
+          { transform: "translateX(-4px)" },
+          { transform: "translateX(0)" },
+        ],
+        { duration: 280, easing: "ease-in-out" },
+      );
       return;
     }
-    mercado.apostar(id, lado); 
+    mercado.apostar(id, lado);
   };
 
   const retirarPregunta = (id: string) => {
-    haptic(); 
+    haptic();
     mercado.retirar(id);
   };
 
@@ -973,11 +1032,17 @@ export function MarketPage() {
       onTouchMove={handleMainTouchMove}
       onTouchEnd={handleMainTouchEnd}
       className="h-[100dvh] w-full overflow-x-hidden overflow-y-auto overscroll-y-none bg-lienzo select-none relative"
-      style={{ ...fuenteApple, WebkitOverflowScrolling: "touch", paddingBottom: "calc(env(safe-area-inset-bottom) + 1.25rem)" }}
+      style={{
+        ...fuenteApple,
+        WebkitOverflowScrolling: "touch",
+        paddingBottom: "calc(env(safe-area-inset-bottom) + 1.25rem)",
+      }}
       onClickCapture={(event) => {
         const target = event.target as Element;
-        if (target.id === "haptic-checkbox" || target.id === "haptic-label") return;
-        if (target.closest('input[type="text"], input:not([type]), textarea')) return;
+        if (target.id === "haptic-checkbox" || target.id === "haptic-label")
+          return;
+        if (target.closest('input[type="text"], input:not([type]), textarea'))
+          return;
         if (target.closest("a, input, select, button")) haptic();
       }}
     >
@@ -1000,32 +1065,20 @@ export function MarketPage() {
         }
       `}</style>
 
-      {/* HEADER TOP-BAR */}
-      <header className="relative z-30 bg-lienzo" style={{ paddingTop: "env(safe-area-inset-top)" }}>
-        <div className="mx-auto flex h-14 w-full max-w-[520px] items-center justify-between px-5">
-          <span style={fuenteApple} className="text-[15px] font-bold tracking-tight">Probabilidad fiable?</span>
-          <div className="flex items-center gap-2">
-            {usuario.esAdmin && <Link to={"/admin" as never} className={`${mono} mr-2`}>ADMN</Link>}
-            {esModerador && <Link to={"/mod" as never} className={`${mono} mr-2 text-ink font-bold`}>MOD</Link>}
-            <Link to="/resueltas" className="flex touch-manipulation items-center justify-center p-2 text-ink opacity-100">
-              <ClipboardList className="h-[20px] w-[20px] shrink-0" strokeWidth={2} />
-            </Link>
-            <Link to="/profile" className="flex touch-manipulation items-center justify-center p-2 text-ink opacity-100">
-              <Settings className="h-[20px] w-[20px] shrink-0" strokeWidth={2} />
-            </Link>
-          </div>
-        </div>
-      </header>
+      <BarraNavegacion
+        activa="inicio"
+        esAdmin={usuario.esAdmin}
+        esModerador={esModerador}
+      />
 
       {/* ZONA AISLADA PARA EL PULL TO REFRESH */}
       <div className="relative w-full">
-        
         {/* INDICADOR PULL TO REFRESH NATIVO IOS */}
-        <div 
+        <div
           className="absolute left-0 top-0 z-10 flex w-full justify-center pointer-events-none items-center"
           style={{
             height: `${pullDistance}px`,
-            transition: isPulling ? 'none' : `height ${SPRING_CONFIG}`
+            transition: isPulling ? "none" : `height ${SPRING_CONFIG}`,
           }}
         >
           <div
@@ -1034,30 +1087,31 @@ export function MarketPage() {
               width: "42px",
               height: "42px",
               opacity: pullProgress,
-              transition: isPulling ? 'none' : `all ${SPRING_CONFIG}`
+              transition: isPulling ? "none" : `all ${SPRING_CONFIG}`,
             }}
           >
-            <IosSpinner 
-              className="h-7 w-7" 
-              style={!isRefreshing 
-                ? { transform: `rotate(${pullDistance * 3}deg)` } 
-                : { animation: "spin 1s steps(12, end) infinite" }
+            <IosSpinner
+              className="h-7 w-7"
+              style={
+                !isRefreshing
+                  ? { transform: `rotate(${pullDistance * 3}deg)` }
+                  : { animation: "spin 1s steps(12, end) infinite" }
               }
             />
           </div>
         </div>
 
         {/* ENVOLTORIO PRINCIPAL QUE BAJA AL TIRAR */}
-        <div 
+        <div
           style={{
             transform: `translateY(${pullDistance}px)`,
-            transition: isPulling ? 'none' : `transform ${SPRING_CONFIG}`
+            transition: isPulling ? "none" : `transform ${SPRING_CONFIG}`,
           }}
         >
           {/* HEADER PRINCIPAL (SALDO Y CLASIFICACIÓN) */}
           <div className="mx-auto w-full max-w-[520px]">
             {!mercado.pausado && (
-              <div className="mt-8 mb-4 flex flex-col items-center justify-center w-full">
+              <div className="mb-8 mt-12 flex w-full flex-col items-center justify-center">
                 <div className="relative z-10 flex w-full items-center justify-center">
                   <div className="flex flex-1 justify-end pr-1.5">
                     <SaldoAnimado valor={mercado.saldo || 0} />
@@ -1071,130 +1125,145 @@ export function MarketPage() {
                     </button>
                   </div>
                 </div>
-                
-                <BotonRankingDinamico rankingFijo={rankingFijo} miNombre={mercado.miNombre} />
-                
 
-
+                <BotonRankingDinamico
+                  rankingFijo={rankingFijo}
+                  miNombre={mercado.miNombre}
+                />
               </div>
             )}
-
-            <Asignaturas 
-              asignaturas={asignaturasOrdenadas}
-              asigId={asigId} 
-              setAsigActiva={scrollToAsig}
-              preguntas={preguntas} 
-              saldo={mercado.saldo || 0}
-            />
           </div>
 
-          {/* CONTENEDOR DESLIZABLE HORIZONTAL */}
-          <div 
-            ref={scrollContainerRef}
-            onWheel={detenerAnimacion}
-            style={{ height: alturaContenedor === 'auto' ? 'auto' : `${alturaContenedor}px` }}
-            className="flex items-start w-full overflow-x-hidden overflow-y-hidden snap-x snap-mandatory overscroll-x-contain mx-auto max-w-[520px] [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] transition-[height] duration-300 ease-out"
-          >
-            {asignaturasOrdenadas.map((asig) => {
-              const idsOrden = ordenSnapshot[asig.id] || [];
-              const preguntasAsignatura = idsOrden
-                .map((id) => preguntas.find((p) => p.id === id))
-                .filter((p): p is Pregunta => !!p && p.asignaturaId === asig.id && p.resultado === null && !p.archivada);
+          <div className="mx-auto w-full max-w-[520px] px-5">
+            <div
+              className="flex justify-center pt-2"
+              role="group"
+              aria-label="Filtrar apuestas"
+            >
+              <div className="flex rounded-full border border-borde bg-white p-1">
+                <button
+                  type="button"
+                  onClick={() => setFiltroHome("recientes")}
+                  aria-pressed={filtroHome === "recientes"}
+                  style={fuenteApple}
+                  className={`touch-manipulation rounded-full px-3.5 py-1.5 text-[13px] font-medium ${
+                    filtroHome === "recientes"
+                      ? "bg-ink text-white"
+                      : "text-sutil"
+                  }`}
+                >
+                  Recientes
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setFiltroHome("hot")}
+                  aria-pressed={filtroHome === "hot"}
+                  style={fuenteApple}
+                  className={`touch-manipulation rounded-full px-3.5 py-1.5 text-[13px] font-medium ${
+                    filtroHome === "hot" ? "bg-ink text-white" : "text-sutil"
+                  }`}
+                >
+                  Hot
+                </button>
+              </div>
+            </div>
 
-              return (
-                <div key={asig.id} data-id={asig.id} className="snap-slide w-full shrink-0 snap-start px-5 flex flex-col">
-                  {asig.fechaExamen && (
-                    <CountdownExamen fechaExamen={asig.fechaExamen} asignaturaId={asig.id} onEditar={mercado.editarFechaExamenPublica} />
-                  )}
+            {preguntasHome.length === 0 ? (
+              <p className="mb-6 mt-8 text-center text-[15px] text-sutil">
+                No hay preguntas abiertas.
+              </p>
+            ) : (
+              preguntasHome.map((p, index) => (
+                <FilaPregunta
+                  key={p.id}
+                  pregunta={p}
+                  contexto={nombreAsignatura(p.asignaturaId)}
+                  bloqueado={
+                    mercado.pausado || asignaturaCerrada(p.asignaturaId)
+                  }
+                  sinTokens={(mercado.saldo || 0) < 1}
+                  ocultarBorde={index === preguntasHome.length - 1}
+                  onApostar={(lado) => intentarApostar(p.id, lado)}
+                  onRetirar={() => retirarPregunta(p.id)}
+                />
+              ))
+            )}
 
-                  {preguntasAsignatura.length === 0 ? (
-                    <p className="text-center text-sutil text-[14px] mt-10 mb-4">No hay preguntas abiertas.</p>
-                  ) : (
-                    preguntasAsignatura.map((p, index) => (
-                      <FilaPregunta
-                        key={p.id}
-                        pregunta={p}
-                        bloqueado={mercado.pausado || asig.cerrada} 
-                        sinTokens={(mercado.saldo || 0) < 1}
-                        ocultarBorde={index === preguntasAsignatura.length - 1}
-                        onApostar={(lado) => intentarApostar(p.id, lado)}
-                        onRetirar={() => retirarPregunta(p.id)}
-                      />
-                    ))
-                  )}
-
-                  {!asig.cerrada && hayAsignaturasAbiertas && (
-                    <div className="mt-4 flex flex-col items-center justify-center w-full">
-                      <div className="mb-12">
-                        <button onClick={() => setModalAbierto(true)} style={fuenteApple} className="flex touch-manipulation items-center gap-2 rounded-full bg-ink px-6 py-3 text-[14px] font-medium text-white shadow-sm transition-transform hover:opacity-90 active:scale-95">
-                          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                            <path d="M12 5v14"></path>
-                            <path d="M5 12h14"></path>
-                          </svg>
-                          Proponer pregunta
-                        </button>
-                      </div>
-
-                      <article className="w-full text-left mb-28">
-                        <button
-                          onClick={compartirApp}
-                          style={fuenteApple}
-                          className="flex touch-manipulation items-center gap-1.5 text-[16px] leading-relaxed text-sutil transition-colors hover:text-ink active:opacity-60"
-                        >
-                          <IconoCompartirApple className="h-4 w-4" />
-                          {copiado ? "enlace copiado" : "compartir la app"}
-                        </button>
-
-                        <ToggleInfo titulo="¿No entiendes cómo funciona? Lee esto.">
-                          <div className="space-y-4 text-[16px] leading-relaxed text-ink">
-                            <p>
-                              Imagina que Fulanito cree que va a caer el ciclo del agua en el examen, porque hace mucho que no cae. Él está muy seguro porque estuvo atento en clase. Apuesta 1 token al SÍ. Sus compañeros Menganito y Zitanito creen que no va a entar, entonces apuestan 1 token cada uno al NO. 
-                            </p>
-                            <p>
-                              La probabilidad de que caiga es del 33% porque esa es la fracción de los participantes creen que va a entrar (1/3). La opinión del grupo queda guardada en ese número.
-                            </p>
-                            <p>
-                            Cuando llega el día del examen, Fulanito tiene razón. Como Fulanito acertó, se lleva los 2 tokens de sus amigos. Fulanito tiene ahora 3 tokens. ¡Es rico!
-                            </p>
-                            <p>
-                            El mercado recompensa al que aporta información verdadera. Casandra es simplemente una máquina que agrega conocimiento colectivo y produce un porcentaje fiable %.
-                            </p>
-                            <p>
-                            Úsalo para consultar la opinión de tu clase.
-                            </p>
-                          </div>
-                        </ToggleInfo>
-                      </article>
-                    </div>
-                  )}
-                </div>
-              );
-            })}
+            {hayAsignaturasAbiertas && (
+              <div className="mb-20 mt-10 flex justify-center">
+                <button
+                  onClick={() => setModalAbierto(true)}
+                  style={fuenteApple}
+                  className="flex touch-manipulation items-center gap-2 rounded-full bg-ink px-6 py-3 text-[14px] font-medium text-white shadow-sm transition-transform hover:opacity-90 active:scale-95"
+                >
+                  <svg
+                    width="18"
+                    height="18"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M12 5v14"></path>
+                    <path d="M5 12h14"></path>
+                  </svg>
+                  Proponer pregunta
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </div>
 
       {modalAbierto && (
         <PantallaNuevaPregunta
-          asignaturas={asignaturas.filter(a => !a.cerrada)}
-          asigInicial={asigCerrada ? "" : asigId}
+          asignaturas={asignaturas.filter((a) => !a.cerrada)}
+          asigInicial={primeraAbierta}
           onCerrar={() => setModalAbierto(false)}
-          onCrear={async (t, id) => { 
+          onCrear={async (t, id) => {
             await mercado.crearPregunta(t, id);
-            
-            if (typeof mercado.recargar === 'function') {
+
+            if (typeof mercado.recargar === "function") {
               await mercado.recargar();
             }
-            
-            setOrdenSnapshot({});
-            // Sin scroll al cerrar el modal: la pregunta se añade, y la
-            // vista se queda exactamente donde estaba.
           }}
         />
       )}
 
-      <input type="checkbox" id="haptic-checkbox" ref={(el) => { if (el) el.setAttribute("switch", ""); }} style={{ position: "fixed", top: "0", left: "0", opacity: "0", pointerEvents: "none", width: "1px", height: "1px" }} tabIndex={-1} aria-hidden="true" />
-      <label htmlFor="haptic-checkbox" id="haptic-label" style={{ position: "fixed", top: "0", left: "0", opacity: "0", pointerEvents: "none", width: "1px", height: "1px" }} aria-hidden="true"></label>
+      <input
+        type="checkbox"
+        id="haptic-checkbox"
+        ref={(el) => {
+          if (el) el.setAttribute("switch", "");
+        }}
+        style={{
+          position: "fixed",
+          top: "0",
+          left: "0",
+          opacity: "0",
+          pointerEvents: "none",
+          width: "1px",
+          height: "1px",
+        }}
+        tabIndex={-1}
+        aria-hidden="true"
+      />
+      <label
+        htmlFor="haptic-checkbox"
+        id="haptic-label"
+        style={{
+          position: "fixed",
+          top: "0",
+          left: "0",
+          opacity: "0",
+          pointerEvents: "none",
+          width: "1px",
+          height: "1px",
+        }}
+        aria-hidden="true"
+      ></label>
     </div>
   );
 }

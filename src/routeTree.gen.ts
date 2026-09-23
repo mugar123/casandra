@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminRouteImport } from './routes/admin'
+import { Route as ApuestasRouteImport } from './routes/apuestas'
 import { Route as ModRouteImport } from './routes/mod'
 import { Route as PrivacidadRouteImport } from './routes/privacidad'
 import { Route as ProfileRouteImport } from './routes/profile'
@@ -25,6 +26,11 @@ const IndexRoute = IndexRouteImport.update({
 const AdminRoute = AdminRouteImport.update({
   id: '/admin',
   path: '/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApuestasRoute = ApuestasRouteImport.update({
+  id: '/apuestas',
+  path: '/apuestas',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ModRoute = ModRouteImport.update({
@@ -56,6 +62,7 @@ const ResueltasRoute = ResueltasRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
+  '/apuestas': typeof ApuestasRoute
   '/mod': typeof ModRoute
   '/privacidad': typeof PrivacidadRoute
   '/profile': typeof ProfileRoute
@@ -65,6 +72,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
+  '/apuestas': typeof ApuestasRoute
   '/mod': typeof ModRoute
   '/privacidad': typeof PrivacidadRoute
   '/profile': typeof ProfileRoute
@@ -75,6 +83,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
+  '/apuestas': typeof ApuestasRoute
   '/mod': typeof ModRoute
   '/privacidad': typeof PrivacidadRoute
   '/profile': typeof ProfileRoute
@@ -86,6 +95,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/admin'
+    | '/apuestas'
     | '/mod'
     | '/privacidad'
     | '/profile'
@@ -95,6 +105,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/admin'
+    | '/apuestas'
     | '/mod'
     | '/privacidad'
     | '/profile'
@@ -104,6 +115,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/admin'
+    | '/apuestas'
     | '/mod'
     | '/privacidad'
     | '/profile'
@@ -114,6 +126,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRoute
+  ApuestasRoute: typeof ApuestasRoute
   ModRoute: typeof ModRoute
   PrivacidadRoute: typeof PrivacidadRoute
   ProfileRoute: typeof ProfileRoute
@@ -135,6 +148,13 @@ declare module '@tanstack/react-router' {
       path: '/admin'
       fullPath: '/admin'
       preLoaderRoute: typeof AdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/apuestas': {
+      id: '/apuestas'
+      path: '/apuestas'
+      fullPath: '/apuestas'
+      preLoaderRoute: typeof ApuestasRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/mod': {
@@ -178,6 +198,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRoute,
+  ApuestasRoute: ApuestasRoute,
   ModRoute: ModRoute,
   PrivacidadRoute: PrivacidadRoute,
   ProfileRoute: ProfileRoute,
