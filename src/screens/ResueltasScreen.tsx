@@ -1,9 +1,11 @@
+import { Link } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { useSesion } from "@/hooks/useSesion";
 import { probabilidad, useMercado } from "@/hooks/useMercado";
-import { BarraNavegacion } from "@/components/BarraNavegacion";
 import { LoaderApp } from "@/components/LoaderApp";
 import { TextoLatex } from "@/components/TextoLatex";
+
+const fuenteApple = { fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif' };
 
 // Iconos SVG limpios para evitar emojis de sistema
 const TicIcon = ({ className }: { className: string }) => (
@@ -65,18 +67,19 @@ export function ResueltasScreen() {
     return { asignatura: asig, preguntas: preguntasAsig };
   }).filter((g) => g.preguntas.length > 0);
 
-  const esModerador = !!mercado.perfil.mod || !!usuario?.esAdmin;
-
   return (
-    <div className="flex h-[100dvh] w-full flex-col overflow-hidden bg-lienzo">
-      <div className="min-h-0 flex-1 overflow-y-auto overscroll-y-none">
-      <main
-        className="mx-auto flex w-full max-w-[520px] flex-col px-5 pb-6"
-        style={{ paddingTop: "calc(env(safe-area-inset-top) + 1.25rem)" }}
-      >
-        <h1 className="mb-6 text-left text-[22px] font-semibold tracking-tight text-ink">
-          Comprueba
-        </h1>
+    <div className="min-h-screen bg-lienzo pb-10 touch-pan-y overscroll-x-none" style={fuenteApple}>
+      
+      <header className="fixed inset-x-0 top-0 z-20 border-b border-linea bg-lienzo/95 backdrop-blur">
+        <div className="mx-auto flex h-14 max-w-[520px] items-center justify-between px-5">
+          <Link to="/" className="text-[15px] font-semibold tracking-tight text-ink hover:opacity-70 touch-manipulation">
+            ← Volver al mercado
+          </Link>
+          <span className="text-[15px] font-semibold tracking-tight">Comprueba</span>
+        </div>
+      </header>
+
+      <main className="mx-auto max-w-[520px] px-5 pt-[calc(5rem+env(safe-area-inset-top))] flex flex-col items-center">
         
         <div className="w-full">
           {resueltasUsuario.length === 0 ? (
@@ -156,12 +159,6 @@ export function ResueltasScreen() {
         </div>
 
       </main>
-      </div>
-      <BarraNavegacion
-        activa="resueltas"
-        esAdmin={!!usuario?.esAdmin}
-        esModerador={esModerador}
-      />
     </div>
   );
 }

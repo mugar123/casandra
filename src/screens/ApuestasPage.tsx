@@ -12,6 +12,11 @@ import {
   FilaPregunta,
 } from "@/screens/MarketPage";
 
+const fuenteApple = {
+  fontFamily:
+    '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
+};
+
 export function ApuestasPage() {
   const { usuario, cargando, entrarConGoogle } = useSesion();
   const mercado = useMercado(usuario);
@@ -78,12 +83,13 @@ export function ApuestasPage() {
   };
 
   return (
-    <div className="flex h-[100dvh] w-full flex-col overflow-hidden bg-lienzo">
-      <div className="min-h-0 flex-1 overflow-y-auto overscroll-y-none">
-      <main
-        className="mx-auto w-full max-w-[520px] pb-6"
-        style={{ paddingTop: "calc(env(safe-area-inset-top) + 1.25rem)" }}
-      >
+    <div className="min-h-screen bg-lienzo pb-16" style={fuenteApple}>
+      <BarraNavegacion
+        activa="apuestas"
+        esAdmin={usuario.esAdmin}
+        esModerador={esModerador}
+      />
+      <main className="mx-auto w-full max-w-[520px] pb-16 pt-6">
         <Asignaturas
           asignaturas={asignaturas}
           asigId={asigId}
@@ -130,12 +136,6 @@ export function ApuestasPage() {
           )}
         </div>
       </main>
-      </div>
-      <BarraNavegacion
-        activa="apuestas"
-        esAdmin={!!usuario.esAdmin}
-        esModerador={esModerador}
-      />
     </div>
   );
 }

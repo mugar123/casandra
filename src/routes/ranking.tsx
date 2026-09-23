@@ -1,5 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { BarraNavegacion } from "@/components/BarraNavegacion";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
 import { useSesion } from "@/hooks/useSesion";
 import { haceTexto, useMercado } from "@/hooks/useMercado";
@@ -7,6 +6,7 @@ import { PantallaLogin } from "@/components/PantallaLogin";
 import { PantallaSeleccionClase } from "@/components/PantallaSeleccionClase";
 import { LoaderApp } from "@/components/LoaderApp"; // <-- Importamos tu loader reutilizable
 import logoCopyfly from "@/images/copyflylogo.png";
+const fuenteApple = { fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif' };
 
 // -----------------------------------------------------
 // FLAG: cambia esta línea para alternar entre la sección
@@ -133,15 +133,23 @@ function PaginaRanking() {
     };
   });
 
-  const esModerador = !!mercado.perfil.mod || !!usuario.esAdmin;
-
   return (
-    <div className="flex h-[100dvh] w-full flex-col overflow-hidden bg-lienzo">
-      <div className="min-h-0 flex-1 overflow-y-auto overscroll-y-none">
-      <main
-        className="mx-auto w-full max-w-[520px] px-5 pb-6"
-        style={{ paddingTop: "calc(env(safe-area-inset-top) + 1.25rem)" }}
+    <div className="min-h-screen bg-lienzo pb-28" style={fuenteApple}>
+      <header 
+        className="fixed inset-x-0 top-0 z-20 border-b border-linea bg-lienzo/95 backdrop-blur" 
+        style={{ paddingTop: "env(safe-area-inset-top)" }}
       >
+        <div className="mx-auto flex h-14 max-w-[520px] items-center px-5">
+          <Link 
+            to="/" 
+            className="flex items-center text-[17px] font-medium tracking-tight text-ink transition-opacity hover:opacity-70 active:opacity-40 touch-manipulation"
+          >
+            ← Volver
+          </Link>
+        </div>
+      </header>
+
+      <main className="mx-auto max-w-[520px] px-5 pt-[calc(4.5rem+env(safe-area-inset-top))]">
         
         <div></div>
 
@@ -267,12 +275,6 @@ function PaginaRanking() {
         )}
 
       </main>
-      </div>
-      <BarraNavegacion
-        activa="ninguna"
-        esAdmin={!!usuario.esAdmin}
-        esModerador={esModerador}
-      />
     </div>
   );
 }
