@@ -1,14 +1,9 @@
-import { Link } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
 import { useSesion } from "@/hooks/useSesion";
 import { useMercado } from "@/hooks/useMercado";
+import { BarraNavegacion } from "@/components/BarraNavegacion";
 import { PantallaLogin } from "@/components/PantallaLogin";
 import { LoaderApp } from "@/components/LoaderApp";
-
-const fuenteApple = {
-  fontFamily:
-    '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
-};
 
 export function ProfilePage() {
   const { usuario, cargando, entrarConGoogle, salir } = useSesion();
@@ -97,23 +92,15 @@ export function ProfilePage() {
     }
   };
 
-  return (
-    <div className="min-h-screen bg-lienzo pb-28" style={fuenteApple}>
-      <header
-        className="fixed inset-x-0 top-0 z-20 bg-lienzo/95 backdrop-blur"
-        style={{ paddingTop: "env(safe-area-inset-top)" }}
-      >
-        <div className="mx-auto flex h-14 max-w-[520px] items-center px-5">
-          <Link
-            to="/"
-            className="flex items-center text-[15px] font-medium tracking-tight text-ink transition-opacity hover:opacity-70 active:opacity-40"
-          >
-            ← Volver al mercado
-          </Link>
-        </div>
-      </header>
+  const esModerador = !!mercado.perfil.mod || !!usuario.esAdmin;
 
-      <main className="mx-auto max-w-[520px] px-5 pt-[calc(4.5rem+env(safe-area-inset-top))]">
+  return (
+    <div className="flex h-[100dvh] w-full flex-col overflow-hidden bg-lienzo">
+      <div className="min-h-0 flex-1 overflow-y-auto overscroll-y-none">
+      <main
+        className="mx-auto w-full max-w-[520px] px-5 pb-6"
+        style={{ paddingTop: "calc(env(safe-area-inset-top) + 1.25rem)" }}
+      >
         <h1 className="mb-2 text-[28px] font-bold tracking-tight text-ink">
           Perfil
         </h1>
@@ -274,6 +261,12 @@ export function ProfilePage() {
           </p>
         </div>
       </main>
+      </div>
+      <BarraNavegacion
+        activa="perfil"
+        esAdmin={!!usuario.esAdmin}
+        esModerador={esModerador}
+      />
     </div>
   );
 }

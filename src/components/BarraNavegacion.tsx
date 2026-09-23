@@ -1,17 +1,14 @@
 import { Link } from "@tanstack/react-router";
 
-const fuenteApple = {
-  fontFamily:
-    '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
-};
-
-type Destino = "inicio" | "apuestas" | "resueltas" | "perfil";
+type Destino =
+  "inicio" | "apuestas" | "resueltas" | "perfil" | "admin" | "mod" | "ninguna";
 
 const enlaces: {
   to: "/" | "/apuestas" | "/resueltas" | "/profile";
-  id: Destino;
+  id: Exclude<Destino, "admin" | "mod" | "ninguna">;
   label: string;
 }[] = [
+  { to: "/", id: "inicio", label: "Inicio" },
   { to: "/apuestas", id: "apuestas", label: "Apuestas" },
   { to: "/resueltas", id: "resueltas", label: "Resueltas" },
   { to: "/profile", id: "perfil", label: "Perfil" },
@@ -26,64 +23,35 @@ export function BarraNavegacion({
   esAdmin?: boolean;
   esModerador?: boolean;
 }) {
+  const destinos: { to: string; id: Destino; label: string }[] = [...enlaces];
+  if (esAdmin) destinos.push({ to: "/admin", id: "admin", label: "Admin" });
+  if (esModerador) destinos.push({ to: "/mod", id: "mod", label: "Mod" });
+
   return (
-    <header
-      className="sticky top-0 z-30 border-b border-linea bg-lienzo/95 backdrop-blur-md"
-      style={{ paddingTop: "env(safe-area-inset-top)" }}
+    <nav
+      aria-label="Secciones"
+      className="w-full shrink-0 border-t border-linea bg-lienzo"
+      style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
     >
-      <div className="mx-auto flex h-14 w-full max-w-[520px] items-center justify-between gap-3 px-4">
-        <Link
-          to="/"
-          style={fuenteApple}
-          className={`shrink-0 text-[16px] tracking-tight ${
-            activa === "inicio"
-              ? "font-bold text-ink"
-              : "font-semibold text-ink/70"
-          }`}
-        >
-          Casandra
-        </Link>
-        <nav
-          className="flex min-w-0 items-center gap-0.5 overflow-x-auto"
-          aria-label="Secciones"
-        >
-          {enlaces.map((enlace) => {
-            const seleccionado = activa === enlace.id;
-            return (
-              <Link
-                key={enlace.id}
-                to={enlace.to}
-                style={fuenteApple}
-                className={`shrink-0 rounded-full px-2.5 py-1.5 text-[13px] transition-colors ${
-                  seleccionado
-                    ? "bg-ink font-semibold text-white"
-                    : "font-medium text-sutil hover:text-ink"
-                }`}
-              >
-                {enlace.label}
-              </Link>
-            );
-          })}
-          {esAdmin && (
+      <div className="mx-auto flex w-full max-w-[520px]">
+        {destinos.map((enlace) => {
+          const seleccionado = activa === enlace.id;
+          return (
             <Link
-              to={"/admin" as never}
-              style={fuenteApple}
-              className="shrink-0 px-2 text-[12px] font-semibold text-ink"
+              key={enlace.id}
+              to={enlace.to as never}
+              className={`relative flex min-w-0 flex-1 items-center justify-center whitespace-nowrap px-0.5 py-3 text-[11px] leading-none ${
+                seleccionado ? "font-semibold text-ink" : "text-sutil"
+              }`}
             >
-              Admin
+              {seleccionado && (
+                <span className="absolute inset-x-0 top-0 h-[2px] bg-ink" />
+              )}
+              {enlace.label}
             </Link>
-          )}
-          {esModerador && (
-            <Link
-              to={"/mod" as never}
-              style={fuenteApple}
-              className="shrink-0 px-2 text-[12px] font-semibold text-ink"
-            >
-              Mod
-            </Link>
-          )}
-        </nav>
+          );
+        })}
       </div>
-    </header>
+    </nav>
   );
 }

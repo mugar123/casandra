@@ -1,14 +1,13 @@
-import { Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { useSesion } from "@/hooks/useSesion";
 import { useHaptic } from "@/hooks/useHaptic";
 import { probabilidad, useMercado, volumen, type Pregunta } from "@/hooks/useMercado";
+import { BarraNavegacion } from "@/components/BarraNavegacion";
 import { PantallaLogin } from "@/components/PantallaLogin";
 import { LoaderApp } from "@/components/LoaderApp";
 import { TextoLatex } from "@/components/TextoLatex";
 
 const mono = "font-mono text-[11px] uppercase tracking-widest";
-const fuenteApple = { fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif' };
 
 function aValorInputLocal(ts: number): string {
   const d = new Date(ts);
@@ -41,15 +40,15 @@ export function ModPage() {
 
   if (!esAdmin && !esMod) {
     return (
-      <main className="flex min-h-screen flex-col items-center justify-center bg-lienzo px-6 text-center" style={fuenteApple}>
-        <h1 className="text-2xl font-semibold tracking-tight">Sin permisos</h1>
-        <p className="mt-2 max-w-xs text-[14px] leading-relaxed text-sutil">
-          Esta sección es exclusiva para moderadores o administradores.
-        </p>
-        <Link to="/" className="mt-8 rounded-full bg-ink px-5 py-2.5 text-[13px] font-medium text-white transition-opacity hover:opacity-85">
-          Volver al mercado
-        </Link>
-      </main>
+      <div className="flex h-[100dvh] w-full flex-col overflow-hidden bg-lienzo">
+        <main className="flex min-h-0 flex-1 flex-col items-center justify-center px-6 text-center">
+          <h1 className="text-2xl font-semibold tracking-tight">Sin permisos</h1>
+          <p className="mt-2 max-w-xs text-[14px] leading-relaxed text-sutil">
+            Esta sección es exclusiva para moderadores o administradores.
+          </p>
+        </main>
+        <BarraNavegacion activa="ninguna" esAdmin={false} esModerador={false} />
+      </div>
     );
   }
 
@@ -63,18 +62,16 @@ export function ModPage() {
     return asig && (esAdmin || asig.claseId === cursoIdActual);
   });
 
-  return (
-    <div className="min-h-screen bg-lienzo pb-28" style={fuenteApple}>
-      <header className="fixed inset-x-0 top-0 z-20 border-b border-linea bg-lienzo/95 backdrop-blur" style={{ paddingTop: "env(safe-area-inset-top)" }}>
-        <div className="mx-auto flex h-14 max-w-[520px] items-center justify-between px-5">
-          <Link to="/" className="text-[15px] font-semibold tracking-tight text-ink touch-manipulation">
-            ← Mercado
-          </Link>
-          <span className={`${mono} text-sutil`}>Panel Moderador ({cursoActualObj?.nombre || "General"})</span>
-        </div>
-      </header>
+  const esModerador = !!mercado.perfil.mod || !!usuario.esAdmin;
 
-      <main className="mx-auto max-w-[520px] px-5 pt-[calc(4rem+env(safe-area-inset-top))]">
+  return (
+    <div className="flex h-[100dvh] w-full flex-col overflow-hidden bg-lienzo">
+      <div className="min-h-0 flex-1 overflow-y-auto overscroll-y-none">
+      <main
+        className="mx-auto w-full max-w-[520px] px-5 pb-6"
+        style={{ paddingTop: "calc(env(safe-area-inset-top) + 1.25rem)" }}
+      >
+        <p className={`${mono} mb-4 text-sutil`}>Panel Moderador ({cursoActualObj?.nombre || "General"})</p>
         <div className="flex gap-6 border-b border-linea pb-2 mb-6">
           <button
             onClick={() => { haptic(); setVistaMod("examenes"); }}
@@ -204,6 +201,12 @@ export function ModPage() {
           </div>
         )}
       </main>
+      </div>
+      <BarraNavegacion
+        activa="mod"
+        esAdmin={!!usuario.esAdmin}
+        esModerador={esModerador}
+      />
     </div>
   );
 }
