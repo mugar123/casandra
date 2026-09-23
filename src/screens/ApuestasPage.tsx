@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { BarraNavegacion } from "@/components/BarraNavegacion";
 import { LoaderApp } from "@/components/LoaderApp";
 import { PantallaLogin } from "@/components/PantallaLogin";
@@ -6,7 +6,11 @@ import { PantallaSeleccionClase } from "@/components/PantallaSeleccionClase";
 import { useHaptic } from "@/hooks/useHaptic";
 import { useMercado, type Lado } from "@/hooks/useMercado";
 import { useSesion } from "@/hooks/useSesion";
-import { FilaPregunta } from "@/screens/MarketPage";
+import {
+  Asignaturas,
+  CountdownExamen,
+  FilaPregunta,
+} from "@/screens/MarketPage";
 
 const fuenteApple = {
   fontFamily:
@@ -17,6 +21,7 @@ export function ApuestasPage() {
   const { usuario, cargando, entrarConGoogle } = useSesion();
   const mercado = useMercado(usuario);
   const haptic = useHaptic();
+  const [asigActiva, setAsigActiva] = useState("");
 
   useEffect(() => {
     const bloquearSwipeIOS = (e: TouchEvent) => {
@@ -57,6 +62,7 @@ export function ApuestasPage() {
   }
 
   const preguntas = mercado.leerPreguntas({ estado: "abiertas" }) || [];
+  const todas = mercado.leerPreguntas({ estado: "todas" }) || [];
   const asignaturas = [...(mercado.leerAsignaturas() || [])].sort((a, b) => {
     if (a.cerrada !== b.cerrada) return a.cerrada ? 1 : -1;
     if (a.fechaExamen == null && b.fechaExamen == null) return 0;
@@ -64,6 +70,9 @@ export function ApuestasPage() {
     if (b.fechaExamen == null) return -1;
     return a.fechaExamen - b.fechaExamen;
   });
+  const asigId = asigActiva || asignaturas[0]?.id || "";
+  const asig = asignaturas.find((a) => a.id === asigId);
+  const deEsta = preguntas.filter((p) => p.asignaturaId === asigId);
 
   const esModerador = !!mercado.perfil.mod || !!usuario.esAdmin;
 
@@ -80,47 +89,52 @@ export function ApuestasPage() {
         esAdmin={usuario.esAdmin}
         esModerador={esModerador}
       />
-      <main className="mx-auto w-full max-w-[520px] px-5 pt-8">
-        <h1 className="text-[28px] font-bold tracking-tight text-ink">
-          Todas las apuestas
-        </h1>
-        <p className="mt-2 text-[16px] leading-relaxed text-sutil">
-          Las preguntas abiertas de tu clase, examen por examen.
-        </p>
+      <main className="mx-auto w-full max-w-[520px] pb-16 pt-6">
+        <Asignaturas
+          asignaturas={asignaturas}
+          asigId={asigId}
+          setAsigActiva={(id) => {
+            haptic();
+            setAsigActiva(id);
+          }}
+          preguntas={todas}
+          saldo={mercado.saldo || 0}
+        />
 
-        {asignaturas.map((asig) => {
-          const deEsta = preguntas.filter((p) => p.asignaturaId === asig.id);
-          if (deEsta.length === 0) return null;
-          return (
-            <section key={asig.id} className="mt-10">
-              <h2 className="text-[13px] font-semibold uppercase tracking-widest text-sutil">
-                {asig.nombre}
-              </h2>
-              <div className="mt-2">
-                {deEsta.map((p) => (
-                  <FilaPregunta
-                    key={p.id}
-                    pregunta={p}
-                    bloqueado={mercado.pausado || asig.cerrada}
-                    sinTokens={(mercado.saldo || 0) < 1}
-                    ocultarBorde={deEsta[deEsta.length - 1]?.id === p.id}
-                    onApostar={(lado) => apostar(p.id, lado)}
-                    onRetirar={() => {
-                      haptic();
-                      mercado.retirar(p.id);
-                    }}
-                  />
-                ))}
-              </div>
-            </section>
-          );
-        })}
+        <div className="px-5">
+          {asig?.fechaExamen ? (
+            <CountdownExamen
+              fechaExamen={asig.fechaExamen}
+              asignaturaId={asig.id}
+              onEditar={mercado.editarFechaExamenPublica}
+            />
+          ) : (
+            <p className="py-6 text-center text-[14px] text-sutil">
+              Sin fecha de examen.
+            </p>
+          )}
 
-        {preguntas.length === 0 && (
-          <p className="mt-12 text-center text-[15px] text-sutil">
-            No hay preguntas abiertas.
-          </p>
-        )}
+          {deEsta.length === 0 ? (
+            <p className="mt-4 text-center text-[15px] text-sutil">
+              No hay preguntas abiertas.
+            </p>
+          ) : (
+            deEsta.map((p, index) => (
+              <FilaPregunta
+                key={p.id}
+                pregunta={p}
+                bloqueado={Boolean(mercado.pausado || asig?.cerrada)}
+                sinTokens={(mercado.saldo || 0) < 1}
+                ocultarBorde={index === deEsta.length - 1}
+                onApostar={(lado) => apostar(p.id, lado)}
+                onRetirar={() => {
+                  haptic();
+                  mercado.retirar(p.id);
+                }}
+              />
+            ))
+          )}
+        </div>
       </main>
     </div>
   );

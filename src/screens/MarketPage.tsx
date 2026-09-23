@@ -19,7 +19,13 @@ import {
 // ============================================================================
 // SPINNER ESTILO NATIVO IOS (12 barritas)
 // ============================================================================
-function IosSpinner({ className, style }: { className?: string; style?: React.CSSProperties }) {
+function IosSpinner({
+  className,
+  style,
+}: {
+  className?: string;
+  style?: React.CSSProperties;
+}) {
   return (
     <svg
       className={className}
@@ -59,7 +65,10 @@ function ordenarParaHome(lista: Pregunta[], filtro: "recientes" | "hot") {
     return b.creadaEn - a.creadaEn;
   });
 }
-const fuenteApple = { fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif' };
+const fuenteApple = {
+  fontFamily:
+    '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
+};
 
 function aValorInputLocal(ts: number): string {
   const d = new Date(ts);
@@ -67,7 +76,7 @@ function aValorInputLocal(ts: number): string {
   return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}T${pad2(d.getHours())}:${pad2(d.getMinutes())}`;
 }
 
-function CountdownExamen({
+export function CountdownExamen({
   fechaExamen,
   asignaturaId,
   onEditar,
@@ -79,7 +88,9 @@ function CountdownExamen({
   const [restanteMs, setRestanteMs] = useState(() => fechaExamen - Date.now());
   const [mostrarInfo, setMostrarInfo] = useState(false);
   const [editando, setEditando] = useState(false);
-  const [valorInput, setValorInput] = useState(() => aValorInputLocal(fechaExamen));
+  const [valorInput, setValorInput] = useState(() =>
+    aValorInputLocal(fechaExamen),
+  );
   const [guardando, setGuardando] = useState(false);
 
   useEffect(() => {
@@ -129,18 +140,34 @@ function CountdownExamen({
     <article className="relative flex w-full flex-col items-center py-6">
       <div className="flex w-full items-baseline justify-center">
         <span className="flex items-baseline gap-1">
-          <span className="inline-block min-w-[1.4ch] text-right font-mono text-[26px] font-medium leading-none tabular-nums text-ink">{dias}</span>
-          <span className="text-[18px] font-normal leading-none text-sutil">días</span>
+          <span className="inline-block min-w-[1.4ch] text-right font-mono text-[26px] font-medium leading-none tabular-nums text-ink">
+            {dias}
+          </span>
+          <span className="text-[18px] font-normal leading-none text-sutil">
+            días
+          </span>
         </span>
-        <span className="mx-2 font-mono text-[18px] font-medium leading-none text-ink">:</span>
-        <span className="flex items-baseline gap-1">
-          <span className="inline-block min-w-[2ch] text-right font-mono text-[26px] font-medium leading-none tabular-nums text-ink">{horas}</span>
-          <span className="text-[18px] font-normal leading-none text-sutil">horas</span>
+        <span className="mx-2 font-mono text-[18px] font-medium leading-none text-ink">
+          :
         </span>
-        <span className="mx-2 font-mono text-[18px] font-medium leading-none text-ink">:</span>
         <span className="flex items-baseline gap-1">
-          <span className="inline-block min-w-[2ch] text-right font-mono text-[26px] font-medium leading-none tabular-nums text-ink">{min}</span>
-          <span className="text-[18px] font-normal leading-none text-sutil">min</span>
+          <span className="inline-block min-w-[2ch] text-right font-mono text-[26px] font-medium leading-none tabular-nums text-ink">
+            {horas}
+          </span>
+          <span className="text-[18px] font-normal leading-none text-sutil">
+            horas
+          </span>
+        </span>
+        <span className="mx-2 font-mono text-[18px] font-medium leading-none text-ink">
+          :
+        </span>
+        <span className="flex items-baseline gap-1">
+          <span className="inline-block min-w-[2ch] text-right font-mono text-[26px] font-medium leading-none tabular-nums text-ink">
+            {min}
+          </span>
+          <span className="text-[18px] font-normal leading-none text-sutil">
+            min
+          </span>
         </span>
       </div>
 
@@ -151,69 +178,109 @@ function CountdownExamen({
         fecha informativa, puedes corregirla si está mal
       </button>
 
-      {mostrarInfo && createPortal(
-        <div onClick={cerrarPopup} className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/40 p-5 backdrop-blur-sm">
+      {mostrarInfo &&
+        createPortal(
           <div
-            onClick={(e) => e.stopPropagation()}
-            style={fuenteApple}
-            className="w-full max-w-[320px] rounded-lg border border-borde bg-white p-5 text-left text-ink"
+            onClick={cerrarPopup}
+            className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/40 p-5 backdrop-blur-sm"
           >
-            {!editando ? (
-              <>
-                <p className="text-[17px] leading-relaxed text-sutil">Fecha programada</p>
-                <p className="mt-1 text-[17px] leading-relaxed">{fechaFormateada}</p>
-                <p className="mt-4 text-[17px] leading-relaxed text-sutil">Esta fecha es informativa y puede estar equivocada.</p>
-                <div className="mt-5 flex gap-2">
-                  <button onClick={cerrarPopup} className="flex-1 touch-manipulation rounded-lg border border-borde bg-white py-2.5 text-[17px] font-medium text-ink active:bg-black/5">
-                    Cancelar
-                  </button>
-                  <button onClick={() => setEditando(true)} className="flex-1 touch-manipulation rounded-lg bg-ink py-2.5 text-[17px] font-medium text-white active:opacity-70">
-                    Corregir
-                  </button>
-                </div>
-              </>
-            ) : (
-              <>
-                <p className="text-[17px] leading-relaxed text-sutil">Corregir fecha</p>
-                <p className="mt-1 text-[17px] leading-relaxed text-sutil">Cualquiera puede corregir esta fecha si está mal.</p>
-                <input
-                  type="datetime-local"
-                  value={valorInput}
-                  onChange={(e) => setValorInput(e.target.value)}
-                  disabled={guardando}
-                  style={{ fontSize: "17px" }}
-                  className="mt-4 w-full rounded-lg border border-borde bg-white px-3 py-2.5 text-left text-[17px] text-ink outline-none focus:border-ink/40 disabled:opacity-50 select-text"
-                />
-                <div className="mt-5 flex gap-2">
-                  <button onClick={() => setEditando(false)} disabled={guardando} className="flex-1 touch-manipulation rounded-lg border border-borde bg-white py-2.5 text-[17px] font-medium text-ink active:bg-black/5 disabled:opacity-50">
-                    Cancelar
-                  </button>
-                  <button onClick={guardarFecha} disabled={guardando || !valorInput} className="flex-1 touch-manipulation rounded-lg bg-ink py-2.5 text-[17px] font-medium text-white active:opacity-70 disabled:opacity-50">
-                    {guardando ? "Guardando..." : "Guardar"}
-                  </button>
-                </div>
-              </>
-            )}
-          </div>
-        </div>,
-        document.body
-      )}
+            <div
+              onClick={(e) => e.stopPropagation()}
+              style={fuenteApple}
+              className="w-full max-w-[320px] rounded-lg border border-borde bg-white p-5 text-left text-ink"
+            >
+              {!editando ? (
+                <>
+                  <p className="text-[17px] leading-relaxed text-sutil">
+                    Fecha programada
+                  </p>
+                  <p className="mt-1 text-[17px] leading-relaxed">
+                    {fechaFormateada}
+                  </p>
+                  <p className="mt-4 text-[17px] leading-relaxed text-sutil">
+                    Esta fecha es informativa y puede estar equivocada.
+                  </p>
+                  <div className="mt-5 flex gap-2">
+                    <button
+                      onClick={cerrarPopup}
+                      className="flex-1 touch-manipulation rounded-lg border border-borde bg-white py-2.5 text-[17px] font-medium text-ink active:bg-black/5"
+                    >
+                      Cancelar
+                    </button>
+                    <button
+                      onClick={() => setEditando(true)}
+                      className="flex-1 touch-manipulation rounded-lg bg-ink py-2.5 text-[17px] font-medium text-white active:opacity-70"
+                    >
+                      Corregir
+                    </button>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <p className="text-[17px] leading-relaxed text-sutil">
+                    Corregir fecha
+                  </p>
+                  <p className="mt-1 text-[17px] leading-relaxed text-sutil">
+                    Cualquiera puede corregir esta fecha si está mal.
+                  </p>
+                  <input
+                    type="datetime-local"
+                    value={valorInput}
+                    onChange={(e) => setValorInput(e.target.value)}
+                    disabled={guardando}
+                    style={{ fontSize: "17px" }}
+                    className="mt-4 w-full rounded-lg border border-borde bg-white px-3 py-2.5 text-left text-[17px] text-ink outline-none focus:border-ink/40 disabled:opacity-50 select-text"
+                  />
+                  <div className="mt-5 flex gap-2">
+                    <button
+                      onClick={() => setEditando(false)}
+                      disabled={guardando}
+                      className="flex-1 touch-manipulation rounded-lg border border-borde bg-white py-2.5 text-[17px] font-medium text-ink active:bg-black/5 disabled:opacity-50"
+                    >
+                      Cancelar
+                    </button>
+                    <button
+                      onClick={guardarFecha}
+                      disabled={guardando || !valorInput}
+                      className="flex-1 touch-manipulation rounded-lg bg-ink py-2.5 text-[17px] font-medium text-white active:opacity-70 disabled:opacity-50"
+                    >
+                      {guardando ? "Guardando..." : "Guardar"}
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
+          </div>,
+          document.body,
+        )}
     </article>
   );
 }
 
-function EscalaPuntos({ si, no, misSi, misNo }: { si: number; no: number; misSi: number; misNo: number; }) {
+function EscalaPuntos({
+  si,
+  no,
+  misSi,
+  misNo,
+}: {
+  si: number;
+  no: number;
+  misSi: number;
+  misNo: number;
+}) {
   const safeSi = si || 0;
   const safeNo = no || 0;
   const safeMisSi = misSi || 0;
   const safeMisNo = misNo || 0;
-  
+
   const total = safeSi + safeNo;
 
   if (total === 0) {
     return (
       <div className="mt-2.5 flex min-h-[16px] items-center">
-        <p className="font-mono text-[11px] leading-none text-sutil">esperando apuestas</p>
+        <p className="font-mono text-[11px] leading-none text-sutil">
+          esperando apuestas
+        </p>
       </div>
     );
   }
@@ -226,18 +293,30 @@ function EscalaPuntos({ si, no, misSi, misNo }: { si: number; no: number; misSi:
       <div className="flex w-full gap-4 items-start" aria-hidden="true">
         <div className="flex flex-1 flex-wrap content-start items-start justify-start gap-1">
           {Array.from({ length: otrosNo }).map((_, i) => (
-            <span key={`no-o-${i}`} className="block h-2 w-2 shrink-0 rounded-full bg-rojo" />
+            <span
+              key={`no-o-${i}`}
+              className="block h-2 w-2 shrink-0 rounded-full bg-rojo"
+            />
           ))}
           {Array.from({ length: safeMisNo }).map((_, i) => (
-            <span key={`no-m-${i}`} className="block h-2 w-2 shrink-0 rounded-full bg-moneda" />
+            <span
+              key={`no-m-${i}`}
+              className="block h-2 w-2 shrink-0 rounded-full bg-moneda"
+            />
           ))}
         </div>
         <div className="flex flex-1 flex-wrap flex-row-reverse content-start items-start gap-1">
           {Array.from({ length: otrosSi }).map((_, i) => (
-            <span key={`si-o-${i}`} className="block h-2 w-2 shrink-0 rounded-full bg-verde" />
+            <span
+              key={`si-o-${i}`}
+              className="block h-2 w-2 shrink-0 rounded-full bg-verde"
+            />
           ))}
           {Array.from({ length: safeMisSi }).map((_, i) => (
-            <span key={`si-m-${i}`} className="block h-2 w-2 shrink-0 rounded-full bg-moneda" />
+            <span
+              key={`si-m-${i}`}
+              className="block h-2 w-2 shrink-0 rounded-full bg-moneda"
+            />
           ))}
         </div>
       </div>
@@ -252,13 +331,15 @@ export function FilaPregunta({
   bloqueado,
   sinTokens,
   ocultarBorde,
+  contexto,
 }: {
   pregunta: Pregunta;
   onApostar: (lado: Lado) => void;
   onRetirar: () => void;
-  bloqueado?: boolean;
+  bloqueado?: boolean | undefined;
   sinTokens?: boolean;
   ocultarBorde?: boolean;
+  contexto?: string | undefined;
 }) {
   const prob = probabilidad(pregunta);
   const totalApuestas = (pregunta.poolSi || 0) + (pregunta.poolNo || 0);
@@ -278,7 +359,7 @@ export function FilaPregunta({
         { transform: "scale(0.97)", offset: 0.75 },
         { transform: "scale(1)" },
       ],
-      { duration: 420, easing: "cubic-bezier(0.22, 0.9, 0.32, 1)" }
+      { duration: 420, easing: "cubic-bezier(0.22, 0.9, 0.32, 1)" },
     );
   };
 
@@ -291,18 +372,33 @@ export function FilaPregunta({
   };
 
   const visuallyBlocked = bloqueado && !cooldown;
-  const btnBase = "flex flex-1 h-[42px] touch-manipulation items-center justify-center gap-2 rounded-lg border px-3 text-[14px] font-medium transition-all duration-150 ease-out";
+  const btnBase =
+    "flex flex-1 h-[42px] touch-manipulation items-center justify-center gap-2 rounded-lg border px-3 text-[14px] font-medium transition-all duration-150 ease-out";
 
   return (
-    <article className={`py-6 w-full ${ocultarBorde ? "" : "border-b border-linea"}`}>
+    <article
+      className={`py-6 w-full ${ocultarBorde ? "" : "border-b border-linea"}`}
+    >
+      {contexto && (
+        <p className="mb-1 text-[12px] font-medium text-sutil">{contexto}</p>
+      )}
       <div className="flex items-start justify-between gap-4">
-        <h2 className="min-w-0 flex-1 break-words text-[19px] font-medium leading-snug text-ink">{pregunta.titulo}</h2>
-        <span className={`shrink-0 font-mono text-[30px] leading-none tabular-nums ${!tieneApuestas ? "text-sutil" : positivo ? "text-verde" : "text-rojo"}`}>
+        <h2 className="min-w-0 flex-1 break-words text-[19px] font-medium leading-snug text-ink">
+          {pregunta.titulo}
+        </h2>
+        <span
+          className={`shrink-0 font-mono text-[30px] leading-none tabular-nums ${!tieneApuestas ? "text-sutil" : positivo ? "text-verde" : "text-rojo"}`}
+        >
           {tieneApuestas ? `${prob}%` : "--%"}
         </span>
       </div>
 
-      <EscalaPuntos si={pregunta.poolSi} no={pregunta.poolNo} misSi={pregunta.misSi} misNo={pregunta.misNo} />
+      <EscalaPuntos
+        si={pregunta.poolSi}
+        no={pregunta.poolNo}
+        misSi={pregunta.misSi}
+        misNo={pregunta.misNo}
+      />
 
       <div className="mt-3 flex gap-2">
         <button
@@ -313,7 +409,11 @@ export function FilaPregunta({
           className={`${btnBase} ${visuallyBlocked ? "opacity-40" : "active:scale-[0.93]"} ${(pregunta.misNo || 0) > 0 ? "border-rojo bg-rojo text-white" : sinTokens ? "border-linea bg-black/5 text-sutil" : "border-borde bg-white text-ink hover:border-ink/30"}`}
         >
           <span>NO</span>
-          {(pregunta.misNo || 0) > 0 && <span className="font-mono text-[16px] font-semibold tabular-nums">· {pregunta.misNo}</span>}
+          {(pregunta.misNo || 0) > 0 && (
+            <span className="font-mono text-[16px] font-semibold tabular-nums">
+              · {pregunta.misNo}
+            </span>
+          )}
         </button>
         <button
           data-apuesta
@@ -323,7 +423,11 @@ export function FilaPregunta({
           className={`${btnBase} ${visuallyBlocked ? "opacity-40" : "active:scale-[0.93]"} ${(pregunta.misSi || 0) > 0 ? "border-verde bg-verde text-white" : sinTokens ? "border-linea bg-black/5 text-sutil" : "border-borde bg-white text-ink hover:border-ink/30"}`}
         >
           <span>SÍ</span>
-          {(pregunta.misSi || 0) > 0 && <span className="font-mono text-[16px] font-semibold tabular-nums">· {pregunta.misSi}</span>}
+          {(pregunta.misSi || 0) > 0 && (
+            <span className="font-mono text-[16px] font-semibold tabular-nums">
+              · {pregunta.misSi}
+            </span>
+          )}
         </button>
       </div>
 
@@ -341,14 +445,19 @@ export function FilaPregunta({
   );
 }
 
-function Asignaturas({
+export function Asignaturas({
   asignaturas,
   asigId,
   setAsigActiva,
   preguntas,
   saldo,
 }: {
-  asignaturas: Array<{ id: string; nombre: string; cerrada?: boolean; fechaExamen?: number | null }>;
+  asignaturas: Array<{
+    id: string;
+    nombre: string;
+    cerrada?: boolean;
+    fechaExamen?: number | null;
+  }>;
   asigId: string;
   setAsigActiva: (id: string) => void;
   preguntas: Pregunta[];
@@ -358,7 +467,11 @@ function Asignaturas({
     <div className="flex flex-wrap justify-center gap-2 pb-6 pt-2 px-5">
       {asignaturas.map((a) => {
         const sinApostar = preguntas.filter(
-          (p) => p.asignaturaId === a.id && p.resultado === null && !p.archivada && (p.misSi || 0) + (p.misNo || 0) === 0
+          (p) =>
+            p.asignaturaId === a.id &&
+            p.resultado === null &&
+            !p.archivada &&
+            (p.misSi || 0) + (p.misNo || 0) === 0,
         ).length;
 
         return (
@@ -367,7 +480,9 @@ function Asignaturas({
             onClick={() => setAsigActiva(a.id)}
             style={fuenteApple}
             className={`relative touch-manipulation whitespace-nowrap rounded-full border flex items-center gap-1.5 px-3.5 py-1.5 text-[13px] font-medium transition-colors active:opacity-70 ${
-              a.id === asigId ? "border-ink bg-ink text-white" : "border-borde bg-white text-ink hover:border-ink/30"
+              a.id === asigId
+                ? "border-ink bg-ink text-white"
+                : "border-borde bg-white text-ink hover:border-ink/30"
             }`}
           >
             <span>{a.nombre}</span>
@@ -401,7 +516,10 @@ function PantallaNuevaPregunta({
   const [cargando, setCargando] = useState(false);
 
   const enviar = async () => {
-    if (!titulo.trim()) { setError("Escribe un enunciado"); return; }
+    if (!titulo.trim()) {
+      setError("Escribe un enunciado");
+      return;
+    }
     try {
       setCargando(true);
       setError(null);
@@ -416,17 +534,53 @@ function PantallaNuevaPregunta({
   };
 
   return (
-    <div className="fixed inset-0 z-40 flex flex-col bg-lienzo" style={{ height: "100dvh" }}>
-      <header className="flex shrink-0 items-center justify-between border-b border-linea px-4" style={{ paddingTop: "calc(env(safe-area-inset-top) + 0.75rem)", paddingBottom: "0.75rem" }}>
-        <button onClick={onCerrar} disabled={cargando} style={fuenteApple} className="touch-manipulation px-1 py-1 text-[17px] text-ink disabled:opacity-40">Cancelar</button>
-        <span style={fuenteApple} className="text-[15px] font-semibold text-ink">Nueva pregunta</span>
-        <button onClick={enviar} disabled={cargando || !titulo.trim()} style={fuenteApple} className="touch-manipulation px-1 py-1 text-[17px] font-semibold text-ink disabled:opacity-30">{cargando ? "..." : "Publicar"}</button>
+    <div
+      className="fixed inset-0 z-40 flex flex-col bg-lienzo"
+      style={{ height: "100dvh" }}
+    >
+      <header
+        className="flex shrink-0 items-center justify-between border-b border-linea px-4"
+        style={{
+          paddingTop: "calc(env(safe-area-inset-top) + 0.75rem)",
+          paddingBottom: "0.75rem",
+        }}
+      >
+        <button
+          onClick={onCerrar}
+          disabled={cargando}
+          style={fuenteApple}
+          className="touch-manipulation px-1 py-1 text-[17px] text-ink disabled:opacity-40"
+        >
+          Cancelar
+        </button>
+        <span
+          style={fuenteApple}
+          className="text-[15px] font-semibold text-ink"
+        >
+          Nueva pregunta
+        </span>
+        <button
+          onClick={enviar}
+          disabled={cargando || !titulo.trim()}
+          style={fuenteApple}
+          className="touch-manipulation px-1 py-1 text-[17px] font-semibold text-ink disabled:opacity-30"
+        >
+          {cargando ? "..." : "Publicar"}
+        </button>
       </header>
-      <div className="flex-1 overflow-y-auto px-5 py-6" style={{ WebkitOverflowScrolling: "touch" }}>
-        <h1 style={fuenteApple} className="text-[15px] font-semibold text-ink">Cuanto más específica mejor, frases largas.</h1>
+      <div
+        className="flex-1 overflow-y-auto px-5 py-6"
+        style={{ WebkitOverflowScrolling: "touch" }}
+      >
+        <h1 style={fuenteApple} className="text-[15px] font-semibold text-ink">
+          Cuanto más específica mejor, frases largas.
+        </h1>
         <textarea
           value={titulo}
-          onChange={(e) => { setTitulo(e.target.value); if (error) setError(null); }}
+          onChange={(e) => {
+            setTitulo(e.target.value);
+            if (error) setError(null);
+          }}
           disabled={cargando}
           autoFocus
           rows={4}
@@ -434,7 +588,12 @@ function PantallaNuevaPregunta({
           style={{ fontSize: "16px" }}
           className="mt-3 w-full resize-none rounded-md border border-borde bg-white px-3 py-2.5 text-ink outline-none focus:border-ink/40 disabled:opacity-50 select-text"
         />
-        <p style={fuenteApple} className="mt-5 text-[13px] font-medium text-sutil">Examen</p>
+        <p
+          style={fuenteApple}
+          className="mt-5 text-[13px] font-medium text-sutil"
+        >
+          Examen
+        </p>
         <div className="mt-2 flex flex-wrap gap-2">
           {asignaturas.map((a) => (
             <button
@@ -454,11 +613,20 @@ function PantallaNuevaPregunta({
   );
 }
 
-function BotonRankingDinamico({ rankingFijo, miNombre }: { rankingFijo: any[]; miNombre: string }) {
+function BotonRankingDinamico({
+  rankingFijo,
+  miNombre,
+}: {
+  rankingFijo: any[];
+  miNombre: string;
+}) {
   if (rankingFijo.length === 0) {
     return (
       <div className="mt-4 flex w-full justify-center px-4">
-        <Link to="/ranking" className="text-[17px] text-ink/90 transition-colors hover:text-ink text-left">
+        <Link
+          to="/ranking"
+          className="text-[17px] text-ink/90 transition-colors hover:text-ink text-left"
+        >
           ver clasificación global →
         </Link>
       </div>
@@ -470,7 +638,10 @@ function BotonRankingDinamico({ rankingFijo, miNombre }: { rankingFijo: any[]; m
   if (miIndice === -1) {
     return (
       <div className="mt-4 flex w-full justify-center px-4">
-        <Link to="/ranking" className="text-[17px] text-ink/90 transition-colors hover:text-ink text-left">
+        <Link
+          to="/ranking"
+          className="text-[17px] text-ink/90 transition-colors hover:text-ink text-left"
+        >
           ver clasificación global →
         </Link>
       </div>
@@ -480,42 +651,76 @@ function BotonRankingDinamico({ rankingFijo, miNombre }: { rankingFijo: any[]; m
   const miPosicion = miIndice + 1;
   const yo = rankingFijo[miIndice];
 
-  const empatadosConmigo = rankingFijo.filter(r => r.tokens === yo.tokens && r.usuario !== miNombre);
+  const empatadosConmigo = rankingFijo.filter(
+    (r) => r.tokens === yo.tokens && r.usuario !== miNombre,
+  );
   const esEmpate = empatadosConmigo.length > 0;
   const compañeroEmpate = empatadosConmigo[0];
 
-  const personasEncima = rankingFijo.filter(r => r.tokens > yo.tokens);
-  const maxScoreEncima = personasEncima.length > 0 ? Math.max(...personasEncima.map(r => r.tokens)) : null;
-  const grupoEncima = maxScoreEncima !== null ? personasEncima.filter(r => r.tokens === maxScoreEncima) : [];
+  const personasEncima = rankingFijo.filter((r) => r.tokens > yo.tokens);
+  const maxScoreEncima =
+    personasEncima.length > 0
+      ? Math.max(...personasEncima.map((r) => r.tokens))
+      : null;
+  const grupoEncima =
+    maxScoreEncima !== null
+      ? personasEncima.filter((r) => r.tokens === maxScoreEncima)
+      : [];
   const elDeArriba = grupoEncima[0];
-  
-  const faltan = maxScoreEncima !== null ? (maxScoreEncima - yo.tokens) + 1 : 1;
-  const todosCero = rankingFijo.every(r => r.tokens === 0);
+
+  const faltan = maxScoreEncima !== null ? maxScoreEncima - yo.tokens + 1 : 1;
+  const todosCero = rankingFijo.every((r) => r.tokens === 0);
 
   return (
     <div className="mt-5 flex w-full justify-center px-4">
-      <Link to="/ranking" className="group relative inline-block max-w-[340px] text-left transition-colors">
+      <Link
+        to="/ranking"
+        className="group relative inline-block max-w-[340px] text-left transition-colors"
+      >
         <div className="text-[17px] text-ink/90 leading-snug break-words group-hover:text-ink transition-colors">
           {todosCero ? (
             <>Nadie ha sumado tokens todavía</>
           ) : (
             <>
-              Vas <strong className="font-semibold text-ink">#{miPosicion}</strong>
+              Vas{" "}
+              <strong className="font-semibold text-ink">#{miPosicion}</strong>
               {miPosicion === 1 && !esEmpate ? (
                 <>. ¡Gracias por tu precisión!</>
               ) : miPosicion === 1 && esEmpate ? (
-                <>, empatado en el primer puesto con <strong className="font-medium text-ink">{compañeroEmpate?.usuario}</strong></>
+                <>
+                  , empatado en el primer puesto con{" "}
+                  <strong className="font-medium text-ink">
+                    {compañeroEmpate?.usuario}
+                  </strong>
+                </>
               ) : esEmpate ? (
-                <>, empatado con <strong className="font-medium text-ink">{compañeroEmpate?.usuario}</strong></>
+                <>
+                  , empatado con{" "}
+                  <strong className="font-medium text-ink">
+                    {compañeroEmpate?.usuario}
+                  </strong>
+                </>
               ) : (
-                <>, a <span className="inline-flex items-center gap-0.5 font-mono font-bold text-ink">{faltan} <Moneda className="h-[14px] w-[14px] -mt-0.5" /></span> de <strong className="font-medium text-ink">{elDeArriba?.usuario}</strong></>
+                <>
+                  , a{" "}
+                  <span className="inline-flex items-center gap-0.5 font-mono font-bold text-ink">
+                    {faltan} <Moneda className="h-[14px] w-[14px] -mt-0.5" />
+                  </span>{" "}
+                  de{" "}
+                  <strong className="font-medium text-ink">
+                    {elDeArriba?.usuario}
+                  </strong>
+                </>
               )}
             </>
           )}
           <br />
           <span className="underline decoration-sutil/50 underline-offset-4 group-hover:decoration-ink/80 transition-colors">
             mira la clasificación
-          </span> <span className="inline-block transition-transform group-hover:translate-x-1">→</span>
+          </span>{" "}
+          <span className="inline-block transition-transform group-hover:translate-x-1">
+            →
+          </span>
         </div>
       </Link>
     </div>
@@ -528,10 +733,13 @@ function SaldoAnimado({ valor }: { valor: number }) {
   const floatValRef = useRef(valor);
   const animRef = useRef<number | null>(null);
 
-  const [maxLen, setMaxLen] = useState(() => Math.floor(Math.abs(valor)).toString().length + (valor < 0 ? 1 : 0));
+  const [maxLen, setMaxLen] = useState(
+    () => Math.floor(Math.abs(valor)).toString().length + (valor < 0 ? 1 : 0),
+  );
 
   useEffect(() => {
-    const curLen = Math.floor(Math.abs(valor)).toString().length + (valor < 0 ? 1 : 0);
+    const curLen =
+      Math.floor(Math.abs(valor)).toString().length + (valor < 0 ? 1 : 0);
     if (curLen > maxLen) {
       setMaxLen(curLen);
     }
@@ -553,7 +761,7 @@ function SaldoAnimado({ valor }: { valor: number }) {
 
       const ease = 1 - Math.pow(1 - progress, 3);
       const currentFloat = startVal + (endVal - startVal) * ease;
-      
+
       floatValRef.current = currentFloat;
       setRenderVal(currentFloat);
 
@@ -604,7 +812,10 @@ function SaldoAnimado({ valor }: { valor: number }) {
         }}
       >
         {items.map((num) => (
-          <span key={num} className="flex h-[1em] w-full items-center justify-end whitespace-nowrap">
+          <span
+            key={num}
+            className="flex h-[1em] w-full items-center justify-end whitespace-nowrap"
+          >
             {num}
           </span>
         ))}
@@ -622,7 +833,9 @@ export function MarketPage() {
   const haptic = useHaptic();
 
   const [modalAbierto, setModalAbierto] = useState(false);
-  const [filtroHome, setFiltroHome] = useState<"recientes" | "hot">("recientes");
+  const [filtroHome, setFiltroHome] = useState<"recientes" | "hot">(
+    "recientes",
+  );
 
   const preguntas = mercado.leerPreguntas({ estado: "todas" }) || [];
   const asignaturas = mercado.leerAsignaturas() || [];
@@ -634,7 +847,7 @@ export function MarketPage() {
   const [pullDistance, setPullDistance] = useState(0);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const mainContainerRef = useRef<HTMLDivElement>(null);
-  
+
   const pullStartY = useRef(0);
   const pullStartX = useRef(0);
   const isVerticalSwipe = useRef<boolean | null>(null);
@@ -665,7 +878,10 @@ export function MarketPage() {
     const diffY = currentY - pullStartY.current;
     const diffX = currentX - pullStartX.current;
 
-    if (isVerticalSwipe.current === null && (Math.abs(diffX) > 5 || Math.abs(diffY) > 5)) {
+    if (
+      isVerticalSwipe.current === null &&
+      (Math.abs(diffX) > 5 || Math.abs(diffY) > 5)
+    ) {
       isVerticalSwipe.current = Math.abs(diffY) > Math.abs(diffX);
     }
 
@@ -693,16 +909,19 @@ export function MarketPage() {
     if (pullDistance >= REFRESH_THRESHOLD && !isRefreshing) {
       haptic();
       setIsRefreshing(true);
-      setPullDistance(SPINNER_OFFSET); 
+      setPullDistance(SPINNER_OFFSET);
 
       try {
-        if (typeof mercado.recargar === 'function') {
+        if (typeof mercado.recargar === "function") {
           await mercado.recargar();
         } else {
-          await new Promise(resolve => setTimeout(resolve, 1000));
+          await new Promise((resolve) => setTimeout(resolve, 1000));
         }
       } finally {
-        mainContainerRef.current?.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior });
+        mainContainerRef.current?.scrollTo({
+          top: 0,
+          behavior: "instant" as ScrollBehavior,
+        });
         setIsRefreshing(false);
         setPullDistance(0);
       }
@@ -726,19 +945,13 @@ export function MarketPage() {
     return a.fechaExamen - b.fechaExamen;
   });
 
-  const [asigActiva, setAsigActiva] = useState<string>("");
-  const asigId = asigActiva || (asignaturasOrdenadas[0]?.id || "");
-
-  const elegirAsignatura = (id: string) => {
-    haptic();
-    setAsigActiva(id);
-  };
-
   useEffect(() => {
     const bloquearSwipeIOS = (e: TouchEvent) => {
       if (e.touches[0].clientX < 25) e.preventDefault();
     };
-    document.addEventListener("touchstart", bloquearSwipeIOS, { passive: false });
+    document.addEventListener("touchstart", bloquearSwipeIOS, {
+      passive: false,
+    });
     return () => document.removeEventListener("touchstart", bloquearSwipeIOS);
   }, []);
 
@@ -763,31 +976,48 @@ export function MarketPage() {
   }
 
   if (!mercado.perfil.claseId) {
-    return <PantallaSeleccionClase clases={mercado.leerClases()} onElegir={mercado.elegirClase} />;
+    return (
+      <PantallaSeleccionClase
+        clases={mercado.leerClases()}
+        onElegir={mercado.elegirClase}
+      />
+    );
   }
 
-  const asigActivaObj = asignaturas.find((a) => a.id === asigId);
-  const asigCerrada = asigActivaObj?.cerrada === true;
   const hayAsignaturasAbiertas = asignaturas.some((a) => !a.cerrada);
-  const abiertasDeAsignatura = preguntas.filter(
-    (p) => p.asignaturaId === asigId && p.resultado === null && !p.archivada,
+  const primeraAbierta = asignaturasOrdenadas.find((a) => !a.cerrada)?.id ?? "";
+  const abiertas = preguntas.filter(
+    (p) => p.resultado === null && !p.archivada,
   );
-  const preguntasHome = ordenarParaHome(abiertasDeAsignatura, filtroHome).slice(0, PREGUNTAS_EN_HOME);
+  const preguntasHome = ordenarParaHome(abiertas, filtroHome).slice(
+    0,
+    PREGUNTAS_EN_HOME,
+  );
+  const nombreAsignatura = (id: string) =>
+    asignaturas.find((a) => a.id === id)?.nombre;
+  const asignaturaCerrada = (id: string) =>
+    asignaturas.find((a) => a.id === id)?.cerrada === true;
 
   const intentarApostar = (id: string, lado: Lado) => {
-    haptic(); 
+    haptic();
     if ((mercado.saldo || 0) < 1) {
-      document.body.animate([
-        { transform: "translateX(0)" }, { transform: "translateX(-7px)" },
-        { transform: "translateX(6px)" }, { transform: "translateX(-4px)" }, { transform: "translateX(0)" }
-      ], { duration: 280, easing: "ease-in-out" });
+      document.body.animate(
+        [
+          { transform: "translateX(0)" },
+          { transform: "translateX(-7px)" },
+          { transform: "translateX(6px)" },
+          { transform: "translateX(-4px)" },
+          { transform: "translateX(0)" },
+        ],
+        { duration: 280, easing: "ease-in-out" },
+      );
       return;
     }
-    mercado.apostar(id, lado); 
+    mercado.apostar(id, lado);
   };
 
   const retirarPregunta = (id: string) => {
-    haptic(); 
+    haptic();
     mercado.retirar(id);
   };
 
@@ -802,11 +1032,17 @@ export function MarketPage() {
       onTouchMove={handleMainTouchMove}
       onTouchEnd={handleMainTouchEnd}
       className="h-[100dvh] w-full overflow-x-hidden overflow-y-auto overscroll-y-none bg-lienzo select-none relative"
-      style={{ ...fuenteApple, WebkitOverflowScrolling: "touch", paddingBottom: "calc(env(safe-area-inset-bottom) + 1.25rem)" }}
+      style={{
+        ...fuenteApple,
+        WebkitOverflowScrolling: "touch",
+        paddingBottom: "calc(env(safe-area-inset-bottom) + 1.25rem)",
+      }}
       onClickCapture={(event) => {
         const target = event.target as Element;
-        if (target.id === "haptic-checkbox" || target.id === "haptic-label") return;
-        if (target.closest('input[type="text"], input:not([type]), textarea')) return;
+        if (target.id === "haptic-checkbox" || target.id === "haptic-label")
+          return;
+        if (target.closest('input[type="text"], input:not([type]), textarea'))
+          return;
         if (target.closest("a, input, select, button")) haptic();
       }}
     >
@@ -829,17 +1065,20 @@ export function MarketPage() {
         }
       `}</style>
 
-      <BarraNavegacion activa="inicio" esAdmin={usuario.esAdmin} esModerador={esModerador} />
+      <BarraNavegacion
+        activa="inicio"
+        esAdmin={usuario.esAdmin}
+        esModerador={esModerador}
+      />
 
       {/* ZONA AISLADA PARA EL PULL TO REFRESH */}
       <div className="relative w-full">
-        
         {/* INDICADOR PULL TO REFRESH NATIVO IOS */}
-        <div 
+        <div
           className="absolute left-0 top-0 z-10 flex w-full justify-center pointer-events-none items-center"
           style={{
             height: `${pullDistance}px`,
-            transition: isPulling ? 'none' : `height ${SPRING_CONFIG}`
+            transition: isPulling ? "none" : `height ${SPRING_CONFIG}`,
           }}
         >
           <div
@@ -848,24 +1087,25 @@ export function MarketPage() {
               width: "42px",
               height: "42px",
               opacity: pullProgress,
-              transition: isPulling ? 'none' : `all ${SPRING_CONFIG}`
+              transition: isPulling ? "none" : `all ${SPRING_CONFIG}`,
             }}
           >
-            <IosSpinner 
-              className="h-7 w-7" 
-              style={!isRefreshing 
-                ? { transform: `rotate(${pullDistance * 3}deg)` } 
-                : { animation: "spin 1s steps(12, end) infinite" }
+            <IosSpinner
+              className="h-7 w-7"
+              style={
+                !isRefreshing
+                  ? { transform: `rotate(${pullDistance * 3}deg)` }
+                  : { animation: "spin 1s steps(12, end) infinite" }
               }
             />
           </div>
         </div>
 
         {/* ENVOLTORIO PRINCIPAL QUE BAJA AL TIRAR */}
-        <div 
+        <div
           style={{
             transform: `translateY(${pullDistance}px)`,
-            transition: isPulling ? 'none' : `transform ${SPRING_CONFIG}`
+            transition: isPulling ? "none" : `transform ${SPRING_CONFIG}`,
           }}
         >
           {/* HEADER PRINCIPAL (SALDO Y CLASIFICACIÓN) */}
@@ -885,33 +1125,31 @@ export function MarketPage() {
                     </button>
                   </div>
                 </div>
-                
-                <BotonRankingDinamico rankingFijo={rankingFijo} miNombre={mercado.miNombre} />
-                
 
-
+                <BotonRankingDinamico
+                  rankingFijo={rankingFijo}
+                  miNombre={mercado.miNombre}
+                />
               </div>
             )}
-
-            <Asignaturas
-              asignaturas={asignaturasOrdenadas}
-              asigId={asigId}
-              setAsigActiva={elegirAsignatura}
-              preguntas={preguntas}
-              saldo={mercado.saldo || 0}
-            />
           </div>
 
           <div className="mx-auto w-full max-w-[520px] px-5">
-            <div className="flex items-center justify-between gap-4 pt-2">
-              <div className="flex rounded-full border border-borde bg-white p-1" role="group" aria-label="Filtrar apuestas">
+            <div
+              className="flex justify-center pt-2"
+              role="group"
+              aria-label="Filtrar apuestas"
+            >
+              <div className="flex rounded-full border border-borde bg-white p-1">
                 <button
                   type="button"
                   onClick={() => setFiltroHome("recientes")}
                   aria-pressed={filtroHome === "recientes"}
                   style={fuenteApple}
                   className={`touch-manipulation rounded-full px-3.5 py-1.5 text-[13px] font-medium ${
-                    filtroHome === "recientes" ? "bg-ink text-white" : "text-sutil"
+                    filtroHome === "recientes"
+                      ? "bg-ink text-white"
+                      : "text-sutil"
                   }`}
                 >
                   Recientes
@@ -928,30 +1166,21 @@ export function MarketPage() {
                   Hot
                 </button>
               </div>
-              <Link to="/apuestas" style={fuenteApple} className="shrink-0 text-[13px] font-medium text-sutil underline decoration-sutil/40 underline-offset-4">
-                Ver todas
-              </Link>
             </div>
-            <p className="mb-2 mt-3 text-[14px] leading-relaxed text-sutil">
-              {filtroHome === "hot" ? "Donde más gente ha votado." : "Las últimas que se han abierto."}
-            </p>
-
-            {asigActivaObj?.fechaExamen && (
-              <CountdownExamen
-                fechaExamen={asigActivaObj.fechaExamen}
-                asignaturaId={asigId}
-                onEditar={mercado.editarFechaExamenPublica}
-              />
-            )}
 
             {preguntasHome.length === 0 ? (
-              <p className="mb-6 mt-8 text-center text-[15px] text-sutil">No hay preguntas abiertas.</p>
+              <p className="mb-6 mt-8 text-center text-[15px] text-sutil">
+                No hay preguntas abiertas.
+              </p>
             ) : (
               preguntasHome.map((p, index) => (
                 <FilaPregunta
                   key={p.id}
                   pregunta={p}
-                  bloqueado={mercado.pausado || asigCerrada}
+                  contexto={nombreAsignatura(p.asignaturaId)}
+                  bloqueado={
+                    mercado.pausado || asignaturaCerrada(p.asignaturaId)
+                  }
                   sinTokens={(mercado.saldo || 0) < 1}
                   ocultarBorde={index === preguntasHome.length - 1}
                   onApostar={(lado) => intentarApostar(p.id, lado)}
@@ -960,14 +1189,23 @@ export function MarketPage() {
               ))
             )}
 
-            {!asigCerrada && hayAsignaturasAbiertas && (
+            {hayAsignaturasAbiertas && (
               <div className="mb-20 mt-10 flex justify-center">
                 <button
                   onClick={() => setModalAbierto(true)}
                   style={fuenteApple}
                   className="flex touch-manipulation items-center gap-2 rounded-full bg-ink px-6 py-3 text-[14px] font-medium text-white shadow-sm transition-transform hover:opacity-90 active:scale-95"
                 >
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <svg
+                    width="18"
+                    height="18"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
                     <path d="M12 5v14"></path>
                     <path d="M5 12h14"></path>
                   </svg>
@@ -981,21 +1219,51 @@ export function MarketPage() {
 
       {modalAbierto && (
         <PantallaNuevaPregunta
-          asignaturas={asignaturas.filter(a => !a.cerrada)}
-          asigInicial={asigCerrada ? "" : asigId}
+          asignaturas={asignaturas.filter((a) => !a.cerrada)}
+          asigInicial={primeraAbierta}
           onCerrar={() => setModalAbierto(false)}
-          onCrear={async (t, id) => { 
+          onCrear={async (t, id) => {
             await mercado.crearPregunta(t, id);
-            
-            if (typeof mercado.recargar === 'function') {
+
+            if (typeof mercado.recargar === "function") {
               await mercado.recargar();
             }
           }}
         />
       )}
 
-      <input type="checkbox" id="haptic-checkbox" ref={(el) => { if (el) el.setAttribute("switch", ""); }} style={{ position: "fixed", top: "0", left: "0", opacity: "0", pointerEvents: "none", width: "1px", height: "1px" }} tabIndex={-1} aria-hidden="true" />
-      <label htmlFor="haptic-checkbox" id="haptic-label" style={{ position: "fixed", top: "0", left: "0", opacity: "0", pointerEvents: "none", width: "1px", height: "1px" }} aria-hidden="true"></label>
+      <input
+        type="checkbox"
+        id="haptic-checkbox"
+        ref={(el) => {
+          if (el) el.setAttribute("switch", "");
+        }}
+        style={{
+          position: "fixed",
+          top: "0",
+          left: "0",
+          opacity: "0",
+          pointerEvents: "none",
+          width: "1px",
+          height: "1px",
+        }}
+        tabIndex={-1}
+        aria-hidden="true"
+      />
+      <label
+        htmlFor="haptic-checkbox"
+        id="haptic-label"
+        style={{
+          position: "fixed",
+          top: "0",
+          left: "0",
+          opacity: "0",
+          pointerEvents: "none",
+          width: "1px",
+          height: "1px",
+        }}
+        aria-hidden="true"
+      ></label>
     </div>
   );
 }
