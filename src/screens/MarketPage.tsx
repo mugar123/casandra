@@ -5,6 +5,7 @@ import { useHaptic } from "@/hooks/useHaptic";
 import { useSesion } from "@/hooks/useSesion";
 import { Lock } from "lucide-react";
 import { BarraNavegacion } from "@/components/BarraNavegacion";
+import { VentanaComoFunciona } from "@/components/VentanaComoFunciona";
 import { PantallaLogin } from "@/components/PantallaLogin";
 import { PantallaSeleccionClase } from "@/components/PantallaSeleccionClase";
 import { LoaderApp } from "@/components/LoaderApp";
@@ -1065,6 +1066,7 @@ export function MarketPage() {
         }
       `}</style>
 
+      <VentanaComoFunciona />
       <BarraNavegacion
         activa="inicio"
         esAdmin={usuario.esAdmin}

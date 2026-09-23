@@ -6,6 +6,10 @@ import tailwindcss from '@tailwindcss/vite'
 import { nitro } from 'nitro/vite'
 
 export default defineConfig({
+  server: {
+    // El túnel público cambia de host. Sin esto Vite rechaza la petición.
+    allowedHosts: true,
+  },
   plugins: [
     tailwindcss(),
     tanstackStart({

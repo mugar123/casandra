@@ -52,12 +52,21 @@ export function useSesion() {
     if (!supabaseConfigurado()) {
       return "El acceso con Google necesita las claves de Supabase de este entorno.";
     }
-    await supabase.auth.signInWithOAuth({
+    const retorno = new URL(window.location.href);
+    retorno.hash = "";
+    const destino = `${retorno.origin}${retorno.pathname}${retorno.search}`;
+    // Si la dirección no está permitida, Supabase ignora el retorno y manda
+    // el navegador a la Site URL del proyecto, que es localhost.
+    if (!origenPermitido(retorno.hostname)) {
+      return "Desde esta dirección Google te devolvería a localhost. El acceso se queda en esta página.";
+    }
+    const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: window.location.origin,
+        redirectTo: destino,
       },
     });
+    if (error) return error.message;
   };
 
   const salir = async () => {
@@ -66,4 +75,9 @@ export function useSesion() {
   };
 
   return { usuario, cargando, entrarConGoogle, salir };
+}
+
+function origenPermitido(hostname: string): boolean {
+  const host = hostname.toLowerCase();
+  return host === "localhost" || host === "127.0.0.1" || host === "::1";
 }
