@@ -58,8 +58,11 @@ export function VentanaComoFunciona() {
         role="dialog"
         aria-modal="true"
         aria-labelledby="como-funciona-titulo"
-        style={fuenteApple}
-        className="relative flex max-h-[min(760px,calc(100dvh-1.5rem))] w-full max-w-[460px] flex-col overflow-hidden rounded-[28px] border border-borde bg-lienzo shadow-[0_24px_80px_rgba(20,16,12,0.28)]"
+        style={{
+          ...fuenteApple,
+          maxHeight: "min(720px, calc(100dvh - 2.5rem))",
+        }}
+        className="relative flex w-full max-w-[460px] flex-col overflow-hidden rounded-[28px] border border-borde bg-lienzo shadow-[0_24px_80px_rgba(20,16,12,0.28)]"
       >
         <div className="overflow-y-auto px-7 pb-2 pt-8 sm:px-8">
           <div className="mb-6 flex items-center gap-3">
