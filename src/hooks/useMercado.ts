@@ -7,6 +7,7 @@
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { supabaseConfigurado } from "@/integrations/supabase/configurado";
 
 export type Lado = "si" | "no";
 
@@ -145,6 +146,12 @@ export function useMercado(usuario: Usuario | null) {
   }, []);
 
   const cargarDatos = useCallback(async () => {
+    if (!supabaseConfigurado()) {
+      setPerfilCargado(true);
+      setIdCargado(usuario ? usuario.id : null);
+      return;
+    }
+
     const [resClases, resAsig, resPerf, resPreg, resApu, resApuAbiertas] = await Promise.all([
       supabase.from("clases").select("*").order("nombre"),
       supabase.from("asignaturas").select("*"),
