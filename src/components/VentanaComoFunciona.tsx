@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 
-const CLAVE = "casandra-como-funciona";
+const CLAVE = "casandra-como-funciona-home";
 
 const fuenteApple = {
   fontFamily:

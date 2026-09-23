@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useHaptic } from "@/hooks/useHaptic";
 import { Link } from "@tanstack/react-router";
+import { avisoAuthInicial } from "@/lib/retornoAuth";
 
 const fuenteApple = { fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif' };
 
@@ -14,6 +15,7 @@ export function PantallaLogin({ entrarConGoogle }: PantallaLoginProps) {
 
   // Bloquea el scroll de la página mientras esta pantalla está montada.
   useEffect(() => {
+    if (avisoAuthInicial) setError(avisoAuthInicial);
     const overflowPrevio = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     return () => {
@@ -67,7 +69,7 @@ export function PantallaLogin({ entrarConGoogle }: PantallaLoginProps) {
         }
       `}</style>
 
-      <main className="flex flex-1 flex-col items-center justify-center px-6 py-12 relative z-10 overflow-hidden">
+      <main className="flex min-h-0 flex-1 flex-col items-center justify-center overflow-y-auto px-6 py-12 relative z-10">
         
         <div className="w-full max-w-[340px] flex flex-col relative pt-4">
           
@@ -114,6 +116,10 @@ export function PantallaLogin({ entrarConGoogle }: PantallaLoginProps) {
             Entra con tu cuenta @usal.es
           </button>
 
+          {error && (
+            <p className="mt-4 text-[16px] text-rojo text-center relative z-10">{error}</p>
+          )}
+
           {/* ========================================== */}
           {/*           POLÍTICA DE PRIVACIDAD             */}
           {/* ========================================== */}
@@ -124,8 +130,6 @@ export function PantallaLogin({ entrarConGoogle }: PantallaLoginProps) {
             </Link>
             .
           </p>
-
-          {error && <p className="mt-4 text-[16px] text-rojo text-center relative z-10">{error}</p>}
 
         </div>
       </main>

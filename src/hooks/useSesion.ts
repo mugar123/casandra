@@ -1,4 +1,9 @@
 import { useEffect, useState } from "react";
+import {
+  anotarAvisoAuth,
+  destinoDeRetorno,
+  retornoConCredencial,
+} from "@/lib/retornoAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { supabaseConfigurado } from "@/integrations/supabase/configurado";
 import type { Usuario } from "./useMercado";
@@ -30,19 +35,17 @@ export function useSesion() {
       return;
     }
 
-    const { data: sub } = supabase.auth.onAuthStateChange((_e, session) => {
-      setUsuario(
-        session?.user ? aUsuario(session.user.id, session.user.email) : null,
-      );
-      setCargando(false);
-    });
-
-    supabase.auth.getSession().then(({ data }) => {
-      setUsuario(
-        data.session?.user
-          ? aUsuario(data.session.user.id, data.session.user.email)
-          : null,
-      );
+    const { data: sub } = supabase.auth.onAuthStateChange((evento, session) => {
+      if (session?.user) {
+        setUsuario(aUsuario(session.user.id, session.user.email));
+      } else if (evento === "INITIAL_SESSION" || evento === "SIGNED_OUT") {
+        if (evento === "INITIAL_SESSION" && retornoConCredencial) {
+          anotarAvisoAuth(
+            "No se ha podido abrir la sesión. Vuelve a entrar con tu cuenta @usal.es.",
+          );
+        }
+        setUsuario(null);
+      }
       setCargando(false);
     });
     return () => sub.subscription.unsubscribe();
@@ -52,12 +55,20 @@ export function useSesion() {
     if (!supabaseConfigurado()) {
       return "El acceso con Google necesita las claves de Supabase de este entorno.";
     }
-    await supabase.auth.signInWithOAuth({
+    const destino = destinoDeRetorno();
+    const retorno = new URL(destino);
+    // Si la dirección no está permitida, Supabase ignora el retorno y manda
+    // el navegador a la Site URL del proyecto, que es localhost.
+    if (!origenPermitido(retorno.hostname)) {
+      return "Desde esta dirección Google te devolvería a localhost. El acceso se queda en esta página.";
+    }
+    const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: window.location.origin,
+        redirectTo: destino,
       },
     });
+    if (error) return error.message;
   };
 
   const salir = async () => {
@@ -66,4 +77,9 @@ export function useSesion() {
   };
 
   return { usuario, cargando, entrarConGoogle, salir };
+}
+
+function origenPermitido(hostname: string): boolean {
+  const host = hostname.toLowerCase();
+  return host === "localhost" || host === "127.0.0.1" || host === "::1";
 }
