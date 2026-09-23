@@ -8,6 +8,8 @@ import { BarraNavegacion } from "@/components/BarraNavegacion";
 import { VentanaComoFunciona } from "@/components/VentanaComoFunciona";
 import { PantallaLogin } from "@/components/PantallaLogin";
 import { PantallaSeleccionClase } from "@/components/PantallaSeleccionClase";
+import { TextoLatex } from "@/components/TextoLatex";
+import { tieneLatex } from "@/lib/latex";
 import { LoaderApp } from "@/components/LoaderApp";
 import {
   probabilidad,
@@ -372,7 +374,7 @@ export function FilaPregunta({
       )}
       <div className="flex items-start justify-between gap-4">
         <h2 className="min-w-0 flex-1 break-words text-[19px] font-medium leading-snug text-ink">
-          {pregunta.titulo}
+          <TextoLatex texto={pregunta.titulo} />
         </h2>
         <span
           className={`shrink-0 font-mono text-[30px] leading-none tabular-nums ${!tieneApuestas ? "text-sutil" : positivo ? "text-verde" : "text-rojo"}`}
@@ -576,6 +578,22 @@ function PantallaNuevaPregunta({
           style={{ fontSize: "16px" }}
           className="mt-3 w-full resize-none rounded-md border border-borde bg-white px-3 py-2.5 text-ink outline-none focus:border-ink/40 disabled:opacity-50 select-text"
         />
+        <p style={fuenteApple} className="mt-2 text-[13px] leading-relaxed text-sutil">
+          Una fórmula va entre $ y $, como $x^2$.
+        </p>
+        {tieneLatex(titulo) && (
+          <div className="mt-4 rounded-md border border-borde bg-white px-3 py-3">
+            <p style={fuenteApple} className="text-[12px] font-medium text-sutil">
+              Así se verá
+            </p>
+            <p
+              style={fuenteApple}
+              className="mt-2 text-[19px] font-medium leading-snug text-ink"
+            >
+              <TextoLatex texto={titulo} />
+            </p>
+          </div>
+        )}
         <p
           style={fuenteApple}
           className="mt-5 text-[13px] font-medium text-sutil"
