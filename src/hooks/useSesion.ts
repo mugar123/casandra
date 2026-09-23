@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { destinoDeRetorno } from "@/lib/retornoAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { supabaseConfigurado } from "@/integrations/supabase/configurado";
 import type { Usuario } from "./useMercado";
@@ -30,19 +31,12 @@ export function useSesion() {
       return;
     }
 
-    const { data: sub } = supabase.auth.onAuthStateChange((_e, session) => {
-      setUsuario(
-        session?.user ? aUsuario(session.user.id, session.user.email) : null,
-      );
-      setCargando(false);
-    });
-
-    supabase.auth.getSession().then(({ data }) => {
-      setUsuario(
-        data.session?.user
-          ? aUsuario(data.session.user.id, data.session.user.email)
-          : null,
-      );
+    const { data: sub } = supabase.auth.onAuthStateChange((evento, session) => {
+      if (session?.user) {
+        setUsuario(aUsuario(session.user.id, session.user.email));
+      } else if (evento === "INITIAL_SESSION" || evento === "SIGNED_OUT") {
+        setUsuario(null);
+      }
       setCargando(false);
     });
     return () => sub.subscription.unsubscribe();
@@ -52,9 +46,8 @@ export function useSesion() {
     if (!supabaseConfigurado()) {
       return "El acceso con Google necesita las claves de Supabase de este entorno.";
     }
-    const retorno = new URL(window.location.href);
-    retorno.hash = "";
-    const destino = `${retorno.origin}${retorno.pathname}${retorno.search}`;
+    const destino = destinoDeRetorno();
+    const retorno = new URL(destino);
     // Si la dirección no está permitida, Supabase ignora el retorno y manda
     // el navegador a la Site URL del proyecto, que es localhost.
     if (!origenPermitido(retorno.hostname)) {

@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useHaptic } from "@/hooks/useHaptic";
 import { Link } from "@tanstack/react-router";
+import { avisoAuthInicial } from "@/lib/retornoAuth";
 
 const fuenteApple = { fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif' };
 
@@ -14,6 +15,7 @@ export function PantallaLogin({ entrarConGoogle }: PantallaLoginProps) {
 
   // Bloquea el scroll de la página mientras esta pantalla está montada.
   useEffect(() => {
+    if (avisoAuthInicial) setError(avisoAuthInicial);
     const overflowPrevio = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     return () => {
