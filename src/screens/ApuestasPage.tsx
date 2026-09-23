@@ -109,7 +109,7 @@ export function ApuestasPage() {
               onEditar={mercado.editarFechaExamenPublica}
             />
           ) : (
-            <p className="py-6 text-center text-[14px] text-sutil">
+            <p className="py-2 text-center text-[13px] text-sutil">
               Sin fecha de examen.
             </p>
           )}

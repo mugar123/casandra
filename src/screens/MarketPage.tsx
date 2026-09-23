@@ -138,45 +138,32 @@ export function CountdownExamen({
   };
 
   return (
-    <article className="relative flex w-full flex-col items-center py-6">
-      <div className="flex w-full items-baseline justify-center">
-        <span className="flex items-baseline gap-1">
-          <span className="inline-block min-w-[1.4ch] text-right font-mono text-[26px] font-medium leading-none tabular-nums text-ink">
-            {dias}
-          </span>
-          <span className="text-[18px] font-normal leading-none text-sutil">
-            días
-          </span>
+    <article className="relative flex w-full flex-col items-center py-2">
+      <p className="flex items-baseline justify-center gap-1.5 font-mono text-[13px] leading-none tabular-nums text-sutil">
+        <span>
+          <span className="text-ink/75">{dias}</span> días
         </span>
-        <span className="mx-2 font-mono text-[18px] font-medium leading-none text-ink">
-          :
+        <span aria-hidden="true" className="text-sutil/35">
+          ·
         </span>
-        <span className="flex items-baseline gap-1">
-          <span className="inline-block min-w-[2ch] text-right font-mono text-[26px] font-medium leading-none tabular-nums text-ink">
-            {horas}
-          </span>
-          <span className="text-[18px] font-normal leading-none text-sutil">
-            horas
-          </span>
+        <span>
+          <span className="text-ink/75">{String(horas).padStart(2, "0")}</span>{" "}
+          h
         </span>
-        <span className="mx-2 font-mono text-[18px] font-medium leading-none text-ink">
-          :
+        <span aria-hidden="true" className="text-sutil/35">
+          ·
         </span>
-        <span className="flex items-baseline gap-1">
-          <span className="inline-block min-w-[2ch] text-right font-mono text-[26px] font-medium leading-none tabular-nums text-ink">
-            {min}
-          </span>
-          <span className="text-[18px] font-normal leading-none text-sutil">
-            min
-          </span>
+        <span>
+          <span className="text-ink/75">{String(min).padStart(2, "0")}</span>{" "}
+          min
         </span>
-      </div>
+      </p>
 
       <button
         onClick={() => setMostrarInfo(true)}
-        className="mt-2.5 touch-manipulation text-center text-[12px] text-sutil underline decoration-sutil/40 underline-offset-4 transition-colors hover:text-ink hover:decoration-ink/40 active:opacity-70"
+        className="mt-1.5 touch-manipulation text-center text-[11px] leading-none text-sutil/80 underline decoration-sutil/25 underline-offset-2 transition-colors hover:text-ink"
       >
-        fecha informativa, puedes corregirla si está mal
+        fecha informativa
       </button>
 
       {mostrarInfo &&
