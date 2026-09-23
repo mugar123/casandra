@@ -5,6 +5,7 @@ import { useHaptic } from "@/hooks/useHaptic";
 import { probabilidad, useMercado, volumen, type Pregunta } from "@/hooks/useMercado";
 import { PantallaLogin } from "@/components/PantallaLogin";
 import { LoaderApp } from "@/components/LoaderApp";
+import { TextoLatex } from "@/components/TextoLatex";
 
 const mono = "font-mono text-[11px] uppercase tracking-widest";
 const fuenteApple = { fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif' };
@@ -179,7 +180,7 @@ export function ModPage() {
                     <div className="flex justify-between items-start gap-2">
                       <div>
                         <span className="font-mono text-[10px] uppercase text-sutil bg-black/5 px-2 py-0.5 rounded">{asig?.nombre || "Examen"}</span>
-                        <h4 className="text-[14px] font-medium text-ink mt-1">{p.titulo}</h4>
+                        <h4 className="text-[14px] font-medium text-ink mt-1"><TextoLatex texto={p.titulo} /></h4>
                       </div>
                       <span className="font-mono text-[14px] text-sutil shrink-0">{probabilidad(p)}%</span>
                     </div>

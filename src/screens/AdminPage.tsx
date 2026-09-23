@@ -6,6 +6,7 @@ import { nombreVisible, premio, probabilidad, useMercado, volumen, type ApuestaD
 import { PantallaLogin } from "@/components/PantallaLogin";
 import { PantallaSeleccionClase } from "@/components/PantallaSeleccionClase";
 import { LoaderApp } from "@/components/LoaderApp";
+import { TextoLatex } from "@/components/TextoLatex";
 
 const mono = "font-mono text-[11px] uppercase tracking-widest";
 const fuenteApple = { fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif' };
@@ -191,7 +192,7 @@ export function AdminPage() {
                               {preguntasAsignatura.map((p) => (
                                 <div key={p.id} className="rounded-xl border border-borde bg-white p-4 shadow-xs space-y-3">
                                   <div className="flex items-start justify-between gap-3">
-                                    <h4 className="text-[14px] leading-snug font-medium text-ink">{p.titulo}</h4>
+                                    <h4 className="text-[14px] leading-snug font-medium text-ink"><TextoLatex texto={p.titulo} /></h4>
                                     <span className="font-mono text-[16px] tabular-nums text-sutil shrink-0">{probabilidad(p)}%</span>
                                   </div>
                                   <div className="flex items-center justify-between text-[11px] font-mono text-sutil">
@@ -237,7 +238,7 @@ export function AdminPage() {
                   <h2 className="text-[14px] font-bold text-rojo">Preguntas Huérfanas ({huerfanas.length})</h2>
                   {huerfanas.map((p) => (
                     <div key={p.id} className="text-[13px] text-rojo flex items-center justify-between">
-                      <span className="truncate pr-2">{p.titulo}</span>
+                      <span className="truncate pr-2"><TextoLatex texto={p.titulo} /></span>
                       <select value={p.asignaturaId || ""} onChange={(e) => mercado.moverPregunta(p.id, e.target.value)} className="rounded border border-rojo bg-white px-2 py-1 text-[12px] text-ink">
                         <option value="" disabled>Mover a...</option>
                         {asignaturas.map((a) => <option key={a.id} value={a.id}>{a.nombre}</option>)}
@@ -258,7 +259,7 @@ export function AdminPage() {
               .sort((a, b) => a.titulo.localeCompare(b.titulo, 'es', { sensitivity: 'base' }))
               .map((p) => (
               <div key={p.id} className="rounded-xl border border-borde bg-white p-4 space-y-3">
-                <h2 className="text-[14px] font-medium text-sutil">{p.titulo}</h2>
+                <h2 className="text-[14px] font-medium text-sutil"><TextoLatex texto={p.titulo} /></h2>
                 <div className="flex gap-2">
                   <button onClick={() => { haptic(); mercado.archivar(p.id, false); }} className="flex-1 rounded-lg bg-black/5 py-1.5 text-[12px]">Desarchivar</button>
                   <button onClick={() => { haptic(); mercado.desresolver(p.id); }} className="flex-1 rounded-lg bg-black/5 py-1.5 text-[12px]">Desresolver</button>
@@ -436,7 +437,7 @@ export function AdminPage() {
             <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl space-y-4 border border-borde" onClick={(e) => e.stopPropagation()} style={fuenteApple}>
               <div>
                 <span className="font-mono text-[11px] text-sutil uppercase tracking-wider">Resolución: {resultadoSi ? "ENTRÓ (SÍ)" : "NO ENTRÓ (NO)"}</span>
-                <h3 className="text-[16px] font-semibold text-ink mt-1">{p.titulo}</h3>
+                <h3 className="text-[16px] font-semibold text-ink mt-1"><TextoLatex texto={p.titulo} /></h3>
               </div>
               <div className="space-y-2">
                 <span className="text-[12px] font-mono uppercase text-sutil">A quién van los tokens</span>

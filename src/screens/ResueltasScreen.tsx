@@ -3,6 +3,7 @@ import { useEffect } from "react";
 import { useSesion } from "@/hooks/useSesion";
 import { probabilidad, useMercado } from "@/hooks/useMercado";
 import { LoaderApp } from "@/components/LoaderApp";
+import { TextoLatex } from "@/components/TextoLatex";
 
 const fuenteApple = { fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif' };
 
@@ -132,7 +133,7 @@ export function ResueltasScreen() {
                               <div className="mt-[1px] flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-full bg-ink text-white">
                                 {haGanado ? <TicIcon className="w-[11px] h-[11px]" /> : <EquisIcon className="w-[11px] h-[11px]" />}
                               </div>
-                              <h3 className="text-[15px] font-medium leading-snug text-ink">{p.titulo}</h3>
+                              <h3 className="text-[15px] font-medium leading-snug text-ink"><TextoLatex texto={p.titulo} /></h3>
                             </div>
                             <span className={`shrink-0 font-mono text-[14px] font-bold tracking-widest uppercase leading-none mt-[2px] relative z-10 ${colorResultado}`}>
                               {textoResultado}
