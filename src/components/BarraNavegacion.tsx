@@ -1,5 +1,4 @@
 import { Link } from "@tanstack/react-router";
-import { Settings } from "lucide-react";
 import { FotoPerfil } from "@/components/FotoPerfil";
 import { useSesion } from "@/hooks/useSesion";
 
@@ -85,29 +84,18 @@ export function BarraNavegacion({
             </Link>
           )}
         </nav>
-        {usuario && (
-          <div className="relative shrink-0">
-            <Link
-              to="/profile"
-              aria-label="Perfil"
-              className="touch-manipulation active:opacity-70"
-            >
-              <FotoPerfil
-                foto={usuario.foto}
-                inicial={usuario.inicial}
-                marcada={activa === "perfil"}
-              />
-            </Link>
-            {activa === "perfil" && (
-              <Link
-                to="/ajustes"
-                aria-label="Ajustes"
-                className="absolute left-1/2 top-[calc(100%+20px)] -translate-x-1/2 text-ink active:opacity-40"
-              >
-                <Settings size={22} strokeWidth={2} />
-              </Link>
-            )}
-          </div>
+        {usuario && activa !== "perfil" && (
+          <Link
+            to="/profile"
+            aria-label="Perfil"
+            className="shrink-0 touch-manipulation active:opacity-70"
+          >
+            <FotoPerfil
+              foto={usuario.foto}
+              inicial={usuario.inicial}
+              marcada={false}
+            />
+          </Link>
         )}
       </div>
     </header>

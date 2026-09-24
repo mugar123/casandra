@@ -1,3 +1,5 @@
+import { Link } from "@tanstack/react-router";
+import { Settings } from "lucide-react";
 import { useEffect, type ReactNode } from "react";
 import { useSesion } from "@/hooks/useSesion";
 import { useMercado, type Pregunta } from "@/hooks/useMercado";
@@ -78,37 +80,36 @@ export function ProfilePage() {
         esModerador={esModerador}
       />
 
-      <main className="mx-auto max-w-[520px] px-5 pt-10">
-        <div className="flex min-w-0 items-center gap-3">
-          <FotoPerfil
-            foto={usuario.foto}
-            inicial={usuario.inicial}
-            className="h-11 w-11 text-[16px]"
-          />
-          <div className="min-w-0">
+      <main className="mx-auto max-w-[520px] px-5 pt-4">
+        <div className="flex items-start justify-between gap-4">
+          <div className="min-w-0 pt-1">
             <h1 className="truncate text-[28px] font-bold leading-none tracking-tight text-ink">
               {mercado.miNombre}
             </h1>
             {clase && <p className="mt-1.5 text-[15px] text-sutil">{clase}</p>}
           </div>
+          <div className="flex shrink-0 flex-col items-center gap-2">
+            <FotoPerfil
+              foto={usuario.foto}
+              inicial={usuario.inicial}
+              className="h-11 w-11 text-[16px]"
+            />
+            <Link
+              to="/ajustes"
+              aria-label="Ajustes"
+              className="text-ink active:opacity-40"
+            >
+              <Settings size={22} strokeWidth={2} />
+            </Link>
+          </div>
         </div>
 
-        <div className="flex flex-col items-center py-8">
-          <p className="font-mono text-[64px] leading-none tabular-nums text-ink">
+        <div className="mt-8 rounded-xl border border-borde bg-white px-5 py-8">
+          <p className="flex items-center justify-center gap-4 font-mono text-[64px] leading-none tabular-nums text-ink">
             {mercado.saldo || 0}
+            <span aria-hidden className="h-14 w-14 rounded-full bg-moneda" />
           </p>
-          <div className="mt-6 flex w-full max-w-[300px] flex-wrap justify-center gap-2.5">
-            {Array.from({
-              length: Math.max(1, Math.min(mercado.saldo || 0, 24)),
-            }).map((_, i) => (
-              <span
-                key={i}
-                aria-hidden
-                className={`h-8 w-8 rounded-full bg-moneda ${(mercado.saldo || 0) === 0 ? "opacity-30" : ""}`}
-              />
-            ))}
-          </div>
-          <p className="mt-5 font-mono text-[15px] tabular-nums text-sutil">
+          <p className="mt-4 text-center font-mono text-[15px] tabular-nums text-sutil">
             {enJuego.reduce((suma, p) => suma + (p.misSi || 0) + (p.misNo || 0), 0)}{" "}
             en juego
           </p>
