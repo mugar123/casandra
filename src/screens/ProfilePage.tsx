@@ -1,279 +1,193 @@
-import { Link } from "@tanstack/react-router";
-import { useState, useEffect } from "react";
+import { useEffect, type ReactNode } from "react";
 import { useSesion } from "@/hooks/useSesion";
-import { useMercado } from "@/hooks/useMercado";
+import { useMercado, type Pregunta } from "@/hooks/useMercado";
 import { PantallaLogin } from "@/components/PantallaLogin";
 import { LoaderApp } from "@/components/LoaderApp";
+import { BarraNavegacion } from "@/components/BarraNavegacion";
+import { TextoLatex } from "@/components/TextoLatex";
 
 const fuenteApple = {
   fontFamily:
     '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
 };
 
+function haGanado(p: Pregunta): boolean {
+  const misSi = p.misSi || 0;
+  const misNo = p.misNo || 0;
+  return (p.resultado === true && misSi > 0) || (p.resultado === false && misNo > 0);
+}
+
+function beneficio(p: Pregunta): number {
+  const misSi = p.misSi || 0;
+  const misNo = p.misNo || 0;
+  const apuesta = misSi > 0 ? misSi : misNo;
+  const poolSi = p.poolSi || 0;
+  const poolNo = p.poolNo || 0;
+  const poolGanador = p.resultado ? poolSi : poolNo;
+  const poolPerdedor = p.resultado ? poolNo : poolSi;
+  if (!haGanado(p) || poolGanador <= 0) return 0;
+  const proporcion = apuesta / poolGanador;
+  return Math.round(apuesta + proporcion * poolPerdedor) - apuesta;
+}
+
 export function ProfilePage() {
-  const { usuario, cargando, entrarConGoogle, salir } = useSesion();
+  const { usuario, cargando, entrarConGoogle } = useSesion();
   const mercado = useMercado(usuario);
 
-  // Estado local para que escribir vaya perfecto sin lag
-  const [nombreLocal, setNombreLocal] = useState("");
-  const [copiado, setCopiado] = useState(false);
-
-  const compartirApp = async () => {
-    const url =
-      window.location.hostname === "localhost"
-        ? "https://casndra.vercel.app"
-        : window.location.origin;
-    const datosCompartir = {
-      title: "Casandra",
-      text: "Prueba Casandra, apuesta tokens sobre qué va a caer en el examen.",
-      url,
-    };
-    try {
-      if (navigator.share) {
-        await navigator.share(datosCompartir);
-      } else if (navigator.clipboard) {
-        await navigator.clipboard.writeText(url);
-        setCopiado(true);
-        setTimeout(() => setCopiado(false), 2000);
-      }
-    } catch {
-      // El usuario canceló el menú de compartir.
-    }
-  };
-
-  // Sincronizamos el estado local con el real cuando carga la página
-  useEffect(() => {
-    if (mercado.perfil?.nombre) {
-      setNombreLocal(mercado.perfil.nombre);
-    }
-  }, [mercado.perfil?.nombre]);
-
-  // -----------------------------------------------------
-  // BLOQUEO DEL SWIPE-TO-GO-BACK DE IOS
-  // -----------------------------------------------------
   useEffect(() => {
     const bloquearSwipeIOS = (e: TouchEvent) => {
-      // Si el toque empieza en los primeros 25 píxeles del borde izquierdo
-      if (e.touches[0].clientX < 25) {
-        e.preventDefault();
-      }
+      if ((e.touches[0]?.clientX ?? 0) < 25) e.preventDefault();
     };
-
-    // Necesitamos { passive: false } para que preventDefault() funcione
-    document.addEventListener("touchstart", bloquearSwipeIOS, {
-      passive: false,
-    });
-
-    return () => {
-      document.removeEventListener("touchstart", bloquearSwipeIOS);
-    };
+    document.addEventListener("touchstart", bloquearSwipeIOS, { passive: false });
+    return () => document.removeEventListener("touchstart", bloquearSwipeIOS);
   }, []);
 
-  if (cargando) {
+  if (cargando || (usuario && !mercado.perfilCargado)) {
     return (
-      <div className="min-h-screen bg-lienzo flex items-center justify-center">
+      <div className="flex min-h-screen items-center justify-center bg-lienzo">
         <LoaderApp />
       </div>
     );
   }
 
-  if (!usuario) {
-    return <PantallaLogin entrarConGoogle={entrarConGoogle} />;
-  }
+  if (!usuario) return <PantallaLogin entrarConGoogle={entrarConGoogle} />;
 
-  // Si el perfil no ha cargado aún, también mostramos el loader
-  if (!mercado.perfilCargado) {
-    return (
-      <div className="min-h-screen bg-lienzo flex items-center justify-center">
-        <LoaderApp />
-      </div>
-    );
-  }
+  const esModerador = !!mercado.perfil.mod || !!usuario.esAdmin;
+  const preguntas = mercado.leerPreguntas({ estado: "todas" }) || [];
+  const asignaturas = mercado.leerAsignaturas() || [];
+  const nombreAsig = (id: string) =>
+    asignaturas.find((a) => a.id === id)?.nombre ?? "";
 
-  // Función que guarda de verdad solo cuando salimos del input (onBlur)
-  const guardarSiCambio = () => {
-    if (nombreLocal !== mercado.perfil.nombre) {
-      mercado.guardarNombre(nombreLocal);
-    }
-  };
+  const enJuego = preguntas.filter(
+    (p) => p.resultado === null && ((p.misSi || 0) > 0 || (p.misNo || 0) > 0),
+  );
+  const ganadas = preguntas
+    .filter((p) => p.resultado !== null && haGanado(p))
+    .sort((a, b) => (b.creadaEn || 0) - (a.creadaEn || 0));
+
+  const clase = mercado
+    .leerClases()
+    .find((c) => c.id === mercado.perfil.claseId)?.nombre;
 
   return (
-    <div className="min-h-screen bg-lienzo pb-28" style={fuenteApple}>
-      <header
-        className="fixed inset-x-0 top-0 z-20 bg-lienzo/95 backdrop-blur"
-        style={{ paddingTop: "env(safe-area-inset-top)" }}
-      >
-        <div className="mx-auto flex h-14 max-w-[520px] items-center px-5">
-          <Link
-            to="/"
-            className="flex items-center text-[15px] font-medium tracking-tight text-ink transition-opacity hover:opacity-70 active:opacity-40"
-          >
-            ← Volver al mercado
-          </Link>
+    <div className="min-h-screen bg-lienzo pb-16" style={fuenteApple}>
+      <BarraNavegacion
+        activa="perfil"
+        esAdmin={usuario.esAdmin}
+        esModerador={esModerador}
+      />
+
+      <main className="mx-auto max-w-[520px] px-5 pt-10">
+        <div className="min-w-0 pr-10">
+          <h1 className="truncate text-[28px] font-bold leading-none tracking-tight text-ink">
+            {mercado.miNombre}
+          </h1>
+          {clase && <p className="mt-1.5 text-[15px] text-sutil">{clase}</p>}
         </div>
-      </header>
 
-      <main className="mx-auto max-w-[520px] px-5 pt-[calc(4.5rem+env(safe-area-inset-top))]">
-        <h1 className="mb-2 text-[28px] font-bold tracking-tight text-ink">
-          Perfil
-        </h1>
-
-        <div className="mb-6 text-[16px] leading-relaxed text-ink">
-          <p>
-            El objetivo de este mercado es agregar información sumando muchas
-            opiniones distintas. Apuesta pensando por tu cuenta. Cuanto más
-            pensamiento individual mejor.
+        <div className="mt-10">
+          <p className="flex items-center justify-center gap-4 font-mono text-[64px] leading-none tabular-nums text-ink">
+            {mercado.saldo || 0}
+            <span aria-hidden className="h-14 w-14 rounded-full bg-moneda" />
+          </p>
+          <p className="mt-4 text-center font-mono text-[15px] tabular-nums text-sutil">
+            {enJuego.reduce((suma, p) => suma + (p.misSi || 0) + (p.misNo || 0), 0)}{" "}
+            en juego
           </p>
         </div>
 
-        <section className="overflow-hidden rounded-xl border border-borde bg-white shadow-sm">
-          {/* Campo Nombre */}
-          <div className="flex flex-col border-b border-linea p-4">
-            <label className="text-[14px] font-medium text-sutil">
-              Nombre (recomendado)
-            </label>
-            <div className="relative mt-2">
-              <input
-                value={nombreLocal}
-                onChange={(e) => setNombreLocal(e.target.value)}
-                onBlur={guardarSiCambio}
-                disabled={mercado.perfil.usaHash}
-                placeholder={usuario.nombre}
-                className="w-full rounded-lg border border-borde bg-black/5 px-3 py-2 pr-10 text-[22px] font-semibold text-ink outline-none transition-colors placeholder:text-sutil/40 focus:border-ink/30 focus:bg-white disabled:border-transparent disabled:bg-transparent disabled:opacity-40"
+        <Seccion titulo="En juego">
+          {enJuego.length === 0 ? (
+            <p className="px-4 py-5 text-[15px] text-sutil">No tienes apuestas abiertas.</p>
+          ) : (
+            enJuego.map((p) => (
+              <Fila
+                key={p.id}
+                asignatura={nombreAsig(p.asignaturaId)}
+                titulo={p.titulo}
+                detalle={detalleEnJuego(p)}
+                tono={(p.misSi || 0) > 0 ? "si" : "no"}
               />
-              {/* Icono de Lápiz */}
-              {!mercado.perfil.usaHash && (
-                <div className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-sutil/60">
-                  <svg
-                    width="18"
-                    height="18"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path>
-                  </svg>
-                </div>
-              )}
-            </div>
-          </div>
+            ))
+          )}
+        </Seccion>
 
-          {/* Switch Modo Anónimo */}
-          <div className="flex items-center justify-between p-4">
-            <div className="flex flex-col">
-              <span className="text-[15px] font-medium text-ink">
-                Sin nombre de usuario
-              </span>
-              <span className="mt-0.5 text-[12px] text-sutil">
-                Ocultar tu nombre a los demás
-              </span>
-            </div>
-
-            <button
-              onClick={() => mercado.usarHash(!mercado.perfil.usaHash)}
-              className={`relative inline-flex h-[31px] w-[51px] shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
-                mercado.perfil.usaHash ? "bg-verde" : "bg-black/10"
-              }`}
-              role="switch"
-              aria-checked={mercado.perfil.usaHash}
-            >
-              <span
-                aria-hidden="true"
-                className={`pointer-events-none inline-block h-[27px] w-[27px] transform rounded-full bg-white shadow-sm ring-0 transition duration-200 ease-in-out ${
-                  mercado.perfil.usaHash
-                    ? "translate-x-[20px]"
-                    : "translate-x-0"
-                }`}
-              />
-            </button>
-          </div>
-
-          {/* Selector de Clase */}
-          <div className="flex flex-col border-t border-linea p-4">
-            <label className="text-[14px] font-medium text-sutil">
-              Grado / Clase
-            </label>
-            <div className="relative mt-2">
-              <select
-                value={mercado.perfil.claseId || ""}
-                onChange={(e) => mercado.elegirClase(e.target.value)}
-                className="w-full appearance-none rounded-lg border border-borde bg-black/5 px-3 py-2.5 pr-10 text-[16px] font-medium text-ink outline-none transition-colors focus:border-ink/30 focus:bg-white active:bg-black/5"
-              >
-                <option value="" disabled>
-                  Selecciona tu clase...
-                </option>
-                {mercado.leerClases().map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.nombre}
-                  </option>
-                ))}
-              </select>
-              {/* Icono de flecha para el select */}
-              <div className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-sutil/60">
-                <svg
-                  width="18"
-                  height="18"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <path d="M6 9l6 6 6-6"></path>
-                </svg>
-              </div>
-            </div>
-            <p className="mt-2 text-[12px] text-sutil">
-              Cambiar de clase ocultará tus asignaturas actuales y mostrará las
-              nuevas.
+        <Seccion titulo="Ganadas">
+          {ganadas.length === 0 ? (
+            <p className="px-4 py-5 text-[15px] text-sutil">
+              Cuando aciertes, aparecerán aquí.
             </p>
-          </div>
-        </section>
+          ) : (
+            ganadas.map((p) => (
+              <Fila
+                key={p.id}
+                asignatura={nombreAsig(p.asignaturaId)}
+                titulo={p.titulo}
+                detalle={`+${beneficio(p)}`}
+                tono="si"
+              />
+            ))
+          )}
+        </Seccion>
 
-        <p className="mt-4 px-2 text-[13px] text-sutil">
-          En el ranking te ven como{" "}
-          <span className="font-semibold text-ink">{mercado.miNombre}</span>.
-        </p>
-
-        <button
-          onClick={() => compartirApp()}
-          className="mt-8 flex w-full touch-manipulation items-center justify-center rounded-xl border border-borde bg-white px-4 py-3.5 text-[15px] font-medium text-ink transition-colors active:bg-black/5"
-        >
-          {copiado ? "Enlace copiado" : "Compartir la app"}
-        </button>
-
-        {/* Botón de Logout */}
-        <button
-          onClick={() => salir()}
-          className="mt-10 flex w-full touch-manipulation items-center justify-center rounded-xl bg-rojo/10 px-4 py-3.5 text-[15px] font-semibold text-rojo transition-colors active:bg-rojo/20"
-        >
-          Cerrar sesión
-        </button>
-
-        {/* Aviso de borrado de datos: Ahora en gris y menos agresivo */}
-        <p className="mt-3 text-center text-[12px] text-sutil">
-          Para eliminar tus datos, consúltame.
-        </p>
-
-        {/* Sección para texto libre y enlace */}
-        <div className="mt-12 text-center">
-          <p className="text-[16px] font-medium leading-relaxed text-ink">
-            Hecho por José en 2026.{" "}
-            <a
-              href="https://joslfer.com"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="font-semibold underline decoration-ink/30 underline-offset-4 transition-colors hover:text-ink/70"
-            >
-              joslfer.com
-            </a>
-          </p>
-        </div>
       </main>
+    </div>
+  );
+}
+
+const mono = "font-mono text-[11px] uppercase tracking-widest";
+
+function detalleEnJuego(p: Pregunta): string {
+  const si = (p.misSi || 0) > 0;
+  const tokens = si ? p.misSi : p.misNo;
+  return `${tokens} · ${si ? "SÍ" : "NO"}`;
+}
+
+function Seccion({
+  titulo,
+  children,
+}: {
+  titulo: string;
+  children: ReactNode;
+}) {
+  return (
+    <section className="mt-10">
+      <h2 className={`mb-2 px-1 text-sutil ${mono}`}>{titulo}</h2>
+      <div className="overflow-hidden rounded-xl border border-borde bg-white">
+        {children}
+      </div>
+    </section>
+  );
+}
+
+function Fila({
+  asignatura,
+  titulo,
+  detalle,
+  tono,
+}: {
+  asignatura: string;
+  titulo: string;
+  detalle: string;
+  tono: "si" | "no";
+}) {
+  return (
+    <div className="flex items-start justify-between gap-4 border-b border-linea px-4 py-4 last:border-0">
+      <div className="min-w-0">
+        {asignatura && (
+          <p className="text-[13px] text-sutil">{asignatura}</p>
+        )}
+        <p className="mt-0.5 text-[17px] leading-snug text-ink">
+          <TextoLatex texto={titulo} />
+        </p>
+      </div>
+      <span
+        className={`shrink-0 font-mono text-[15px] tabular-nums ${
+          tono === "si" ? "text-verde" : "text-rojo"
+        }`}
+      >
+        {detalle}
+      </span>
     </div>
   );
 }

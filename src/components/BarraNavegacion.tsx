@@ -1,20 +1,22 @@
 import { Link } from "@tanstack/react-router";
+import { Settings } from "lucide-react";
+import { FotoPerfil } from "@/components/FotoPerfil";
+import { useSesion } from "@/hooks/useSesion";
 
 const fuenteApple = {
   fontFamily:
     '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
 };
 
-type Destino = "inicio" | "apuestas" | "resueltas" | "perfil";
+type Destino = "inicio" | "apuestas" | "resueltas" | "perfil" | "ajustes";
 
 const enlaces: {
-  to: "/" | "/apuestas" | "/resueltas" | "/profile";
+  to: "/" | "/apuestas" | "/resueltas";
   id: Destino;
   label: string;
 }[] = [
   { to: "/apuestas", id: "apuestas", label: "Apuestas" },
   { to: "/resueltas", id: "resueltas", label: "Resueltas" },
-  { to: "/profile", id: "perfil", label: "Perfil" },
 ];
 
 export function BarraNavegacion({
@@ -26,12 +28,14 @@ export function BarraNavegacion({
   esAdmin?: boolean;
   esModerador?: boolean;
 }) {
+  const { usuario } = useSesion();
+
   return (
     <header
       className="sticky top-0 z-30 border-b border-linea bg-lienzo/95 backdrop-blur-md"
       style={{ paddingTop: "env(safe-area-inset-top)" }}
     >
-      <div className="mx-auto flex h-14 w-full max-w-[520px] items-center justify-between gap-3 px-4">
+      <div className="mx-auto flex h-14 w-full max-w-[520px] items-center gap-3 px-4">
         <Link
           to="/"
           style={fuenteApple}
@@ -44,7 +48,7 @@ export function BarraNavegacion({
           Casandra
         </Link>
         <nav
-          className="flex min-w-0 items-center gap-0.5 overflow-x-auto"
+          className="flex min-w-0 flex-1 items-center gap-0.5 overflow-x-auto"
           aria-label="Secciones"
         >
           {enlaces.map((enlace) => {
@@ -67,22 +71,44 @@ export function BarraNavegacion({
           {esAdmin && (
             <Link
               to={"/admin" as never}
-              style={fuenteApple}
-              className="shrink-0 px-2 text-[12px] font-semibold text-ink"
+              className="shrink-0 px-2 font-mono text-[11px] font-medium uppercase tracking-widest text-sutil"
             >
-              Admin
+              Admn
             </Link>
           )}
           {esModerador && (
             <Link
               to={"/mod" as never}
-              style={fuenteApple}
-              className="shrink-0 px-2 text-[12px] font-semibold text-ink"
+              className="shrink-0 px-2 font-mono text-[11px] font-medium uppercase tracking-widest text-sutil"
             >
               Mod
             </Link>
           )}
         </nav>
+        {usuario && (
+          <div className="relative shrink-0">
+            <Link
+              to="/profile"
+              aria-label="Perfil"
+              className="touch-manipulation active:opacity-70"
+            >
+              <FotoPerfil
+                foto={usuario.foto}
+                inicial={usuario.inicial}
+                marcada={activa === "perfil"}
+              />
+            </Link>
+            {activa === "perfil" && (
+              <Link
+                to="/ajustes"
+                aria-label="Ajustes"
+                className="absolute left-1/2 top-[calc(100%+20px)] -translate-x-1/2 text-ink active:opacity-40"
+              >
+                <Settings size={22} strokeWidth={2} />
+              </Link>
+            )}
+          </div>
+        )}
       </div>
     </header>
   );

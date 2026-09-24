@@ -15,13 +15,25 @@ function generarHashUsuario(id: string): string {
   return `user_${id.replace(/-/g, "").slice(0, 8)}`;
 }
 
-function aUsuario(id: string, email: string | null | undefined): Usuario {
+function fotoDeGoogle(meta: Record<string, unknown> | undefined): string | null {
+  const valor = meta?.["avatar_url"] ?? meta?.["picture"];
+  return typeof valor === "string" && valor.startsWith("https://") ? valor : null;
+}
+
+function aUsuario(
+  id: string,
+  email: string | null | undefined,
+  meta: Record<string, unknown> | undefined,
+): Usuario {
   const correo = email ?? "";
   const handle = correo.split("@")[0]?.toLowerCase() ?? "";
+  const inicial = (handle[0] || "C").toUpperCase();
   return {
     id: id,
     nombre: generarHashUsuario(id),
     esAdmin: handle === ADMIN_HANDLE,
+    foto: fotoDeGoogle(meta),
+    inicial,
   };
 }
 
@@ -37,7 +49,13 @@ export function useSesion() {
 
     const { data: sub } = supabase.auth.onAuthStateChange((evento, session) => {
       if (session?.user) {
-        setUsuario(aUsuario(session.user.id, session.user.email));
+        setUsuario(
+          aUsuario(
+            session.user.id,
+            session.user.email,
+            session.user.user_metadata as Record<string, unknown> | undefined,
+          ),
+        );
       } else if (evento === "INITIAL_SESSION" || evento === "SIGNED_OUT") {
         if (evento === "INITIAL_SESSION" && retornoConCredencial) {
           anotarAvisoAuth(

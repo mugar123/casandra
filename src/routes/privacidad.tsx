@@ -34,7 +34,7 @@ function PaginaPrivacidad() {
           <section>
             <h2 className="mb-2 text-[17px] font-semibold text-ink">1. Datos recopilados</h2>
             <p>
-              Para poder iniciar sesión se utiliza una cuenta de Google (o de la USAL). De la información proporcionada por el servicio de autenticación, solo se recopila y utiliza la dirección de correo electrónico y el nombre público para identificar al usuario. Aunque el sistema recibe por defecto el enlace a la foto de perfil asociada a la cuenta, la aplicación no descarga, no procesa y no muestra dicha imagen en ningún momento.
+              Para poder iniciar sesión se utiliza una cuenta de Google (o de la USAL). De la información proporcionada por el servicio de autenticación se utilizan la dirección de correo electrónico, el nombre público y la foto de perfil, que se muestra en la barra y en el perfil. Esa foto no se guarda en la base de datos de Casandra.
             </p>
           </section>
 

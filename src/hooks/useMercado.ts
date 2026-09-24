@@ -57,6 +57,8 @@ export interface Usuario {
   id: string;
   nombre: string;
   esAdmin: boolean;
+  foto: string | null;
+  inicial: string;
 }
 
 export interface Alumno {
