@@ -1,5 +1,3 @@
-import { Link } from "@tanstack/react-router";
-import { Settings } from "lucide-react";
 import { useEffect, type ReactNode } from "react";
 import { useSesion } from "@/hooks/useSesion";
 import { useMercado, type Pregunta } from "@/hooks/useMercado";
@@ -80,17 +78,7 @@ export function ProfilePage() {
         esModerador={esModerador}
       />
 
-      <div className="mx-auto flex max-w-[520px] justify-end px-4 pt-3">
-        <Link
-          to="/ajustes"
-          aria-label="Ajustes"
-          className="flex h-8 w-8 items-center justify-center text-ink active:opacity-40"
-        >
-          <Settings size={22} strokeWidth={2} />
-        </Link>
-      </div>
-
-      <main className="mx-auto max-w-[520px] px-5">
+      <main className="mx-auto max-w-[520px] px-5 pt-10">
         <div className="flex min-w-0 items-center gap-3">
           <FotoPerfil
             foto={usuario.foto}
