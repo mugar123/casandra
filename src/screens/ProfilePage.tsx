@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { useEffect } from "react";
+import { useEffect, type ReactNode } from "react";
 import { useSesion } from "@/hooks/useSesion";
 import { useMercado, type Pregunta } from "@/hooks/useMercado";
 import { PantallaLogin } from "@/components/PantallaLogin";
@@ -79,84 +79,60 @@ export function ProfilePage() {
         esModerador={esModerador}
       />
 
-      <main className="mx-auto max-w-[520px] px-5 pt-8">
-        <div className="flex items-center gap-4">
+      <main className="mx-auto max-w-[520px] px-5 pt-10">
+        <header className="flex flex-col items-center text-center">
           <FotoPerfil
             foto={usuario.foto}
             inicial={usuario.inicial}
-            className="h-[72px] w-[72px] text-[28px]"
+            className="h-16 w-16 text-[22px]"
           />
-          <div className="min-w-0">
-            <h1 className="truncate text-[28px] font-bold tracking-tight text-ink">
-              {mercado.miNombre}
-            </h1>
-            {clase && <p className="mt-0.5 text-[15px] text-sutil">{clase}</p>}
-          </div>
-        </div>
-
-        <div className="mb-4 mt-12 flex items-center justify-center gap-3">
-          <span className="font-mono text-[64px] leading-none tabular-nums text-ink">
+          <h1 className="mt-4 text-[28px] font-bold tracking-tight text-ink">
+            {mercado.miNombre}
+          </h1>
+          {clase && <p className="mt-1 text-[15px] text-sutil">{clase}</p>}
+          <p className="mt-5 flex items-center gap-1.5 font-mono text-[28px] leading-none tabular-nums text-ink">
             {mercado.saldo || 0}
-          </span>
-          <span aria-hidden className="h-12 w-12 rounded-full bg-moneda" />
-        </div>
-        <p className="mb-12 text-center text-[13px] text-sutil">Tu saldo</p>
+            <span aria-hidden className="h-3.5 w-3.5 rounded-full bg-moneda" />
+          </p>
+        </header>
 
-        <section>
-          <h2 className="text-[13px] font-medium uppercase tracking-widest text-sutil">
-            En juego
-          </h2>
+        <Seccion titulo="En juego">
           {enJuego.length === 0 ? (
-            <p className="mt-3 text-[15px] text-sutil">No tienes apuestas abiertas.</p>
+            <p className="px-4 py-5 text-[15px] text-sutil">No tienes apuestas abiertas.</p>
           ) : (
-            <ul className="mt-2">
-              {enJuego.map((p) => {
-                const lado = (p.misSi || 0) > 0 ? "SÍ" : "NO";
-                const tokens = (p.misSi || 0) > 0 ? p.misSi : p.misNo;
-                return (
-                  <li key={p.id} className="border-b border-linea py-4 last:border-0">
-                    <p className="text-[12px] text-sutil">{nombreAsig(p.asignaturaId)}</p>
-                    <p className="mt-1 text-[17px] font-medium leading-snug text-ink">
-                      <TextoLatex texto={p.titulo} />
-                    </p>
-                    <p className="mt-1 font-mono text-[13px] tabular-nums text-ink">
-                      {tokens} a {lado}
-                    </p>
-                  </li>
-                );
-              })}
-            </ul>
+            enJuego.map((p) => (
+              <Fila
+                key={p.id}
+                asignatura={nombreAsig(p.asignaturaId)}
+                titulo={p.titulo}
+                detalle={detalleEnJuego(p)}
+                tono={(p.misSi || 0) > 0 ? "si" : "no"}
+              />
+            ))
           )}
-        </section>
+        </Seccion>
 
-        <section className="mt-10">
-          <h2 className="text-[13px] font-medium uppercase tracking-widest text-sutil">
-            Ganadas
-          </h2>
+        <Seccion titulo="Ganadas">
           {ganadas.length === 0 ? (
-            <p className="mt-3 text-[15px] text-sutil">
-              Cuando aciertes, el historial aparecerá aquí.
+            <p className="px-4 py-5 text-[15px] text-sutil">
+              Cuando aciertes, aparecerán aquí.
             </p>
           ) : (
-            <ul className="mt-2">
-              {ganadas.map((p) => (
-                <li key={p.id} className="border-b border-linea py-4 last:border-0">
-                  <p className="text-[12px] text-sutil">{nombreAsig(p.asignaturaId)}</p>
-                  <p className="mt-1 text-[17px] font-medium leading-snug text-ink">
-                    <TextoLatex texto={p.titulo} />
-                  </p>
-                  <p className="mt-1 font-mono text-[13px] tabular-nums text-verde">
-                    +{beneficio(p)}
-                  </p>
-                </li>
-              ))}
-            </ul>
+            ganadas.map((p) => (
+              <Fila
+                key={p.id}
+                asignatura={nombreAsig(p.asignaturaId)}
+                titulo={p.titulo}
+                detalle={`+${beneficio(p)}`}
+                tono="si"
+              />
+            ))
           )}
-        </section>
+        </Seccion>
 
         <Link
           to="/ajustes"
-          className="mt-12 flex w-full items-center justify-between rounded-xl border border-borde bg-white px-4 py-3.5 text-[15px] font-medium text-ink active:bg-black/5"
+          className="mt-8 flex items-center justify-between rounded-xl border border-borde bg-white px-4 py-4 text-[17px] text-ink active:bg-black/5"
         >
           Ajustes
           <span aria-hidden className="text-sutil">
@@ -164,6 +140,63 @@ export function ProfilePage() {
           </span>
         </Link>
       </main>
+    </div>
+  );
+}
+
+const mono = "font-mono text-[11px] uppercase tracking-widest";
+
+function detalleEnJuego(p: Pregunta): string {
+  const si = (p.misSi || 0) > 0;
+  const tokens = si ? p.misSi : p.misNo;
+  return `${tokens} · ${si ? "SÍ" : "NO"}`;
+}
+
+function Seccion({
+  titulo,
+  children,
+}: {
+  titulo: string;
+  children: ReactNode;
+}) {
+  return (
+    <section className="mt-10">
+      <h2 className={`mb-2 px-1 text-sutil ${mono}`}>{titulo}</h2>
+      <div className="overflow-hidden rounded-xl border border-borde bg-white">
+        {children}
+      </div>
+    </section>
+  );
+}
+
+function Fila({
+  asignatura,
+  titulo,
+  detalle,
+  tono,
+}: {
+  asignatura: string;
+  titulo: string;
+  detalle: string;
+  tono: "si" | "no";
+}) {
+  return (
+    <div className="flex items-start justify-between gap-4 border-b border-linea px-4 py-4 last:border-0">
+      <div className="min-w-0">
+        {asignatura && (
+          <p className="text-[13px] text-sutil">{asignatura}</p>
+        )}
+        <p className="mt-0.5 text-[17px] leading-snug text-ink">
+          <TextoLatex texto={titulo} />
+        </p>
+      </div>
+      <span
+        className={`shrink-0 font-mono text-[15px] tabular-nums ${
+          tono === "si" ? "text-verde" : "text-rojo"
+        }`}
+      >
+        {detalle}
+      </span>
     </div>
   );
 }
