@@ -1,5 +1,4 @@
 import { Link } from "@tanstack/react-router";
-import { Settings } from "lucide-react";
 import { FotoPerfil } from "@/components/FotoPerfil";
 import { useSesion } from "@/hooks/useSesion";
 
@@ -96,15 +95,6 @@ export function BarraNavegacion({
               inicial={usuario.inicial}
               marcada={activa === "perfil"}
             />
-          </Link>
-        )}
-        {activa === "perfil" && (
-          <Link
-            to="/ajustes"
-            aria-label="Ajustes"
-            className="-mr-1 shrink-0 text-ink active:opacity-40"
-          >
-            <Settings size={22} strokeWidth={2} />
           </Link>
         )}
       </div>

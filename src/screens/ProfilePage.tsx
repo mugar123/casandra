@@ -1,3 +1,5 @@
+import { Link } from "@tanstack/react-router";
+import { Settings } from "lucide-react";
 import { useEffect, type ReactNode } from "react";
 import { useSesion } from "@/hooks/useSesion";
 import { useMercado, type Pregunta } from "@/hooks/useMercado";
@@ -79,13 +81,22 @@ export function ProfilePage() {
       />
 
       <main className="mx-auto max-w-[520px] px-5 pt-6">
-        <div className="flex min-w-0 items-center gap-3">
-          <FotoPerfil
-            foto={usuario.foto}
-            inicial={usuario.inicial}
-            className="h-11 w-11 text-[16px]"
-          />
-          <div className="min-w-0">
+        <div className="flex items-start gap-3">
+          <div className="flex flex-col items-center gap-2">
+            <FotoPerfil
+              foto={usuario.foto}
+              inicial={usuario.inicial}
+              className="h-11 w-11 text-[16px]"
+            />
+            <Link
+              to="/ajustes"
+              aria-label="Ajustes"
+              className="text-ink active:opacity-40"
+            >
+              <Settings size={20} strokeWidth={2} />
+            </Link>
+          </div>
+          <div className="min-w-0 pt-1">
             <h1 className="truncate text-[28px] font-bold leading-none tracking-tight text-ink">
               {mercado.miNombre}
             </h1>
@@ -93,10 +104,14 @@ export function ProfilePage() {
           </div>
         </div>
 
-        <div className="flex min-h-[220px] items-center justify-center">
-          <p className="flex items-center gap-3 font-mono text-[64px] leading-none tabular-nums text-ink">
+        <div className="flex flex-col items-center justify-center gap-3 py-16">
+          <p className="flex items-center gap-4 font-mono text-[64px] leading-none tabular-nums text-ink">
             {mercado.saldo || 0}
-            <span aria-hidden className="h-12 w-12 rounded-full bg-moneda" />
+            <span aria-hidden className="h-16 w-16 rounded-full bg-moneda" />
+          </p>
+          <p className="font-mono text-[15px] tabular-nums text-sutil">
+            {enJuego.reduce((suma, p) => suma + (p.misSi || 0) + (p.misNo || 0), 0)}{" "}
+            en juego
           </p>
         </div>
 
