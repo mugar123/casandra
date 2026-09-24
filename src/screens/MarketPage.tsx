@@ -1118,7 +1118,7 @@ export function MarketPage() {
           {/* HEADER PRINCIPAL (SALDO Y CLASIFICACIÓN) */}
           <div className="mx-auto w-full max-w-[520px]">
             {!mercado.pausado && (
-              <div className="mb-2 mt-6 flex w-full flex-col items-center justify-center">
+              <div className="mb-12 mt-16 flex w-full flex-col items-center justify-center">
                 <div className="relative z-10 flex w-full items-center justify-center">
                   <div className="flex flex-1 justify-end pr-1.5">
                     <SaldoAnimado valor={mercado.saldo || 0} />

@@ -1,20 +1,21 @@
 import { Link } from "@tanstack/react-router";
+import { FotoPerfil } from "@/components/FotoPerfil";
+import { useSesion } from "@/hooks/useSesion";
 
 const fuenteApple = {
   fontFamily:
     '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
 };
 
-type Destino = "inicio" | "apuestas" | "resueltas" | "perfil";
+type Destino = "inicio" | "apuestas" | "resueltas" | "perfil" | "ajustes";
 
 const enlaces: {
-  to: "/" | "/apuestas" | "/resueltas" | "/profile";
+  to: "/" | "/apuestas" | "/resueltas";
   id: Destino;
   label: string;
 }[] = [
   { to: "/apuestas", id: "apuestas", label: "Apuestas" },
   { to: "/resueltas", id: "resueltas", label: "Resueltas" },
-  { to: "/profile", id: "perfil", label: "Perfil" },
 ];
 
 export function BarraNavegacion({
@@ -26,12 +27,14 @@ export function BarraNavegacion({
   esAdmin?: boolean;
   esModerador?: boolean;
 }) {
+  const { usuario } = useSesion();
+
   return (
     <header
       className="sticky top-0 z-30 border-b border-linea bg-lienzo/95 backdrop-blur-md"
       style={{ paddingTop: "env(safe-area-inset-top)" }}
     >
-      <div className="mx-auto flex h-14 w-full max-w-[520px] items-center justify-between gap-3 px-4">
+      <div className="mx-auto flex h-14 w-full max-w-[520px] items-center gap-3 px-4">
         <Link
           to="/"
           style={fuenteApple}
@@ -44,7 +47,7 @@ export function BarraNavegacion({
           Casandra
         </Link>
         <nav
-          className="flex min-w-0 items-center gap-0.5 overflow-x-auto"
+          className="flex min-w-0 flex-1 items-center gap-0.5 overflow-x-auto"
           aria-label="Secciones"
         >
           {enlaces.map((enlace) => {
@@ -81,6 +84,19 @@ export function BarraNavegacion({
             </Link>
           )}
         </nav>
+        {usuario && (
+          <Link
+            to="/profile"
+            aria-label="Perfil"
+            className="shrink-0 touch-manipulation active:opacity-70"
+          >
+            <FotoPerfil
+              foto={usuario.foto}
+              inicial={usuario.inicial}
+              marcada={activa === "perfil"}
+            />
+          </Link>
+        )}
       </div>
     </header>
   );
