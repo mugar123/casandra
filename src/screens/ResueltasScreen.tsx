@@ -1,3 +1,4 @@
+import { Link } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { useSesion } from "@/hooks/useSesion";
 import { probabilidad, useMercado } from "@/hooks/useMercado";
@@ -71,12 +72,23 @@ export function ResueltasScreen() {
 
   return (
     <div className="min-h-screen bg-lienzo pb-10 touch-pan-y overscroll-x-none" style={fuenteApple}>
-      {usuario && (
+      {usuario ? (
         <BarraNavegacion
           activa="resueltas"
           esAdmin={usuario.esAdmin}
           esModerador={esModerador}
         />
+      ) : (
+        <header className="border-b border-linea bg-lienzo/95">
+          <div className="mx-auto flex h-14 max-w-[520px] items-center px-5">
+            <Link
+              to="/"
+              className="text-[15px] font-semibold tracking-tight text-ink"
+            >
+              ← Inicio
+            </Link>
+          </div>
+        </header>
       )}
 
       <main className="mx-auto flex max-w-[520px] flex-col items-center px-5 pt-8">
