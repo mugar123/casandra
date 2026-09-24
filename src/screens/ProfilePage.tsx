@@ -85,7 +85,7 @@ export function ProfilePage() {
           {clase && <p className="mt-1.5 text-[15px] text-sutil">{clase}</p>}
         </div>
 
-        <div className="mt-8 rounded-xl border border-borde bg-white px-5 py-8">
+        <div className="mt-10">
           <p className="flex items-center justify-center gap-4 font-mono text-[64px] leading-none tabular-nums text-ink">
             {mercado.saldo || 0}
             <span aria-hidden className="h-14 w-14 rounded-full bg-moneda" />
