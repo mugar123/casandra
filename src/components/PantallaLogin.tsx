@@ -53,7 +53,7 @@ export function PantallaLogin({ entrarConGoogle }: PantallaLoginProps) {
           inset: 0;
           border-radius: 50%;
           /* Color amarillo plano y sólido */
-          background-color: #eab308;
+          background-color: var(--moneda);
           /* Rebote sincronizado con la velocidad lenta */
           animation: salto-casandra 1.5s cubic-bezier(.5,-500,.5,500) infinite;
         }
@@ -94,18 +94,10 @@ export function PantallaLogin({ entrarConGoogle }: PantallaLoginProps) {
               Consulta qué caerá según lo que saben muchas personas de clase.
             </p>
             <p>
-              Si tienes algo que añadir, apuesta tokens simbólicos como este {" "}
-              <span className="inline-block h-[14px] w-[14px] rounded-full bg-moneda align-[-1px] shadow-sm relative z-10" />
-              . (ficticios)
+              Si tienes algo que añadir, apuesta tokens simbólicos como este{" "}
+              <span className="inline-block h-[14px] w-[14px] rounded-full bg-moneda align-[-1px]" />
+              . Son ficticios.
             </p>
-  
-
-            {/* PÁRRAFO 3 */}
-            <p>
-              {/* Escribe tu tercer párrafo justo debajo de esta línea */}
-            
-            </p>
-
           </div>
           {/* ========================================== */}
 

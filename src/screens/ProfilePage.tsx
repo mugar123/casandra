@@ -1,9 +1,9 @@
-import { Link } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
 import { useSesion } from "@/hooks/useSesion";
 import { useMercado } from "@/hooks/useMercado";
 import { PantallaLogin } from "@/components/PantallaLogin";
 import { LoaderApp } from "@/components/LoaderApp";
+import { BarraNavegacion } from "@/components/BarraNavegacion";
 
 const fuenteApple = {
   fontFamily:
@@ -97,23 +97,17 @@ export function ProfilePage() {
     }
   };
 
-  return (
-    <div className="min-h-screen bg-lienzo pb-28" style={fuenteApple}>
-      <header
-        className="fixed inset-x-0 top-0 z-20 bg-lienzo/95 backdrop-blur"
-        style={{ paddingTop: "env(safe-area-inset-top)" }}
-      >
-        <div className="mx-auto flex h-14 max-w-[520px] items-center px-5">
-          <Link
-            to="/"
-            className="flex items-center text-[15px] font-medium tracking-tight text-ink transition-opacity hover:opacity-70 active:opacity-40"
-          >
-            ← Volver al mercado
-          </Link>
-        </div>
-      </header>
+  const esModerador = !!mercado.perfil.mod || !!usuario.esAdmin;
 
-      <main className="mx-auto max-w-[520px] px-5 pt-[calc(4.5rem+env(safe-area-inset-top))]">
+  return (
+    <div className="min-h-screen bg-lienzo pb-16" style={fuenteApple}>
+      <BarraNavegacion
+        activa="perfil"
+        esAdmin={usuario.esAdmin}
+        esModerador={esModerador}
+      />
+
+      <main className="mx-auto max-w-[520px] px-5 pt-8">
         <h1 className="mb-2 text-[28px] font-bold tracking-tight text-ink">
           Perfil
         </h1>

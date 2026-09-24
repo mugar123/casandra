@@ -1118,18 +1118,19 @@ export function MarketPage() {
           {/* HEADER PRINCIPAL (SALDO Y CLASIFICACIÓN) */}
           <div className="mx-auto w-full max-w-[520px]">
             {!mercado.pausado && (
-              <div className="mb-8 mt-12 flex w-full flex-col items-center justify-center">
+              <div className="mb-2 mt-6 flex w-full flex-col items-center justify-center">
                 <div className="relative z-10 flex w-full items-center justify-center">
                   <div className="flex flex-1 justify-end pr-1.5">
                     <SaldoAnimado valor={mercado.saldo || 0} />
                   </div>
                   <div className="flex flex-1 justify-start pl-1.5">
-                    <button
+                    <span
+                      aria-hidden
                       style={{ width: "47px", height: "47px" }}
-                      className="flex shrink-0 items-center justify-center rounded-full touch-manipulation transition-transform hover:scale-110 active:scale-90 focus:outline-none"
+                      className="flex shrink-0 items-center justify-center"
                     >
                       <Moneda className="!h-full !w-full" />
-                    </button>
+                    </span>
                   </div>
                 </div>
 
@@ -1143,36 +1144,36 @@ export function MarketPage() {
 
           <div className="mx-auto w-full max-w-[520px] px-5">
             <div
-              className="flex justify-center pt-2"
+              className="flex justify-center gap-6 pt-1"
               role="group"
               aria-label="Filtrar apuestas"
             >
-              <div className="flex rounded-full border border-borde bg-white p-1">
-                <button
-                  type="button"
-                  onClick={() => setFiltroHome("recientes")}
-                  aria-pressed={filtroHome === "recientes"}
-                  style={fuenteApple}
-                  className={`touch-manipulation rounded-full px-3.5 py-1.5 text-[13px] font-medium ${
-                    filtroHome === "recientes"
-                      ? "bg-ink text-white"
-                      : "text-sutil"
-                  }`}
-                >
-                  Recientes
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setFiltroHome("hot")}
-                  aria-pressed={filtroHome === "hot"}
-                  style={fuenteApple}
-                  className={`touch-manipulation rounded-full px-3.5 py-1.5 text-[13px] font-medium ${
-                    filtroHome === "hot" ? "bg-ink text-white" : "text-sutil"
-                  }`}
-                >
-                  Hot
-                </button>
-              </div>
+              <button
+                type="button"
+                onClick={() => setFiltroHome("recientes")}
+                aria-pressed={filtroHome === "recientes"}
+                style={fuenteApple}
+                className={`touch-manipulation border-b-2 pb-1 text-[15px] font-medium ${
+                  filtroHome === "recientes"
+                    ? "border-ink text-ink"
+                    : "border-transparent text-sutil"
+                }`}
+              >
+                Recientes
+              </button>
+              <button
+                type="button"
+                onClick={() => setFiltroHome("hot")}
+                aria-pressed={filtroHome === "hot"}
+                style={fuenteApple}
+                className={`touch-manipulation border-b-2 pb-1 text-[15px] font-medium ${
+                  filtroHome === "hot"
+                    ? "border-ink text-ink"
+                    : "border-transparent text-sutil"
+                }`}
+              >
+                Hot
+              </button>
             </div>
 
             {preguntasHome.length === 0 ? (

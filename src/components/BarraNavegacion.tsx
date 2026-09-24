@@ -67,17 +67,15 @@ export function BarraNavegacion({
           {esAdmin && (
             <Link
               to={"/admin" as never}
-              style={fuenteApple}
-              className="shrink-0 px-2 text-[12px] font-semibold text-ink"
+              className="shrink-0 px-2 font-mono text-[11px] font-medium uppercase tracking-widest text-sutil"
             >
-              Admin
+              Admn
             </Link>
           )}
           {esModerador && (
             <Link
               to={"/mod" as never}
-              style={fuenteApple}
-              className="shrink-0 px-2 text-[12px] font-semibold text-ink"
+              className="shrink-0 px-2 font-mono text-[11px] font-medium uppercase tracking-widest text-sutil"
             >
               Mod
             </Link>
