@@ -1,4 +1,3 @@
-import { Link } from "@tanstack/react-router";
 import { useEffect, type ReactNode } from "react";
 import { useSesion } from "@/hooks/useSesion";
 import { useMercado, type Pregunta } from "@/hooks/useMercado";
@@ -79,22 +78,27 @@ export function ProfilePage() {
         esModerador={esModerador}
       />
 
-      <main className="mx-auto max-w-[520px] px-5 pt-10">
-        <header className="flex flex-col items-center text-center">
+      <main className="mx-auto max-w-[520px] px-5 pt-6">
+        <div className="flex min-w-0 items-center gap-3">
           <FotoPerfil
             foto={usuario.foto}
             inicial={usuario.inicial}
-            className="h-16 w-16 text-[22px]"
+            className="h-11 w-11 text-[16px]"
           />
-          <h1 className="mt-4 text-[28px] font-bold tracking-tight text-ink">
-            {mercado.miNombre}
-          </h1>
-          {clase && <p className="mt-1 text-[15px] text-sutil">{clase}</p>}
-          <p className="mt-5 flex items-center gap-1.5 font-mono text-[28px] leading-none tabular-nums text-ink">
+          <div className="min-w-0">
+            <h1 className="truncate text-[28px] font-bold leading-none tracking-tight text-ink">
+              {mercado.miNombre}
+            </h1>
+            {clase && <p className="mt-1.5 text-[15px] text-sutil">{clase}</p>}
+          </div>
+        </div>
+
+        <div className="flex min-h-[220px] items-center justify-center">
+          <p className="flex items-center gap-3 font-mono text-[64px] leading-none tabular-nums text-ink">
             {mercado.saldo || 0}
-            <span aria-hidden className="h-3.5 w-3.5 rounded-full bg-moneda" />
+            <span aria-hidden className="h-12 w-12 rounded-full bg-moneda" />
           </p>
-        </header>
+        </div>
 
         <Seccion titulo="En juego">
           {enJuego.length === 0 ? (
@@ -130,15 +134,6 @@ export function ProfilePage() {
           )}
         </Seccion>
 
-        <Link
-          to="/ajustes"
-          className="mt-8 flex items-center justify-between rounded-xl border border-borde bg-white px-4 py-4 text-[17px] text-ink active:bg-black/5"
-        >
-          Ajustes
-          <span aria-hidden className="text-sutil">
-            →
-          </span>
-        </Link>
       </main>
     </div>
   );
