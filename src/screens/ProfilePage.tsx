@@ -80,23 +80,24 @@ export function ProfilePage() {
         esModerador={esModerador}
       />
 
-      <main className="mx-auto max-w-[520px] px-5 pt-6">
-        <div className="flex items-start gap-3">
-          <div className="flex flex-col items-center gap-2">
-            <FotoPerfil
-              foto={usuario.foto}
-              inicial={usuario.inicial}
-              className="h-11 w-11 text-[16px]"
-            />
-            <Link
-              to="/ajustes"
-              aria-label="Ajustes"
-              className="text-ink active:opacity-40"
-            >
-              <Settings size={20} strokeWidth={2} />
-            </Link>
-          </div>
-          <div className="min-w-0 pt-1">
+      <div className="mx-auto flex max-w-[520px] justify-end px-4 pt-3">
+        <Link
+          to="/ajustes"
+          aria-label="Ajustes"
+          className="flex h-8 w-8 items-center justify-center text-ink active:opacity-40"
+        >
+          <Settings size={22} strokeWidth={2} />
+        </Link>
+      </div>
+
+      <main className="mx-auto max-w-[520px] px-5">
+        <div className="flex min-w-0 items-center gap-3">
+          <FotoPerfil
+            foto={usuario.foto}
+            inicial={usuario.inicial}
+            className="h-11 w-11 text-[16px]"
+          />
+          <div className="min-w-0">
             <h1 className="truncate text-[28px] font-bold leading-none tracking-tight text-ink">
               {mercado.miNombre}
             </h1>
@@ -104,12 +105,22 @@ export function ProfilePage() {
           </div>
         </div>
 
-        <div className="flex flex-col items-center justify-center gap-3 py-16">
-          <p className="flex items-center gap-4 font-mono text-[64px] leading-none tabular-nums text-ink">
+        <div className="flex flex-col items-center py-8">
+          <p className="font-mono text-[64px] leading-none tabular-nums text-ink">
             {mercado.saldo || 0}
-            <span aria-hidden className="h-16 w-16 rounded-full bg-moneda" />
           </p>
-          <p className="font-mono text-[15px] tabular-nums text-sutil">
+          <div className="mt-6 flex w-full max-w-[300px] flex-wrap justify-center gap-2.5">
+            {Array.from({
+              length: Math.max(1, Math.min(mercado.saldo || 0, 24)),
+            }).map((_, i) => (
+              <span
+                key={i}
+                aria-hidden
+                className={`h-8 w-8 rounded-full bg-moneda ${(mercado.saldo || 0) === 0 ? "opacity-30" : ""}`}
+              />
+            ))}
+          </div>
+          <p className="mt-5 font-mono text-[15px] tabular-nums text-sutil">
             {enJuego.reduce((suma, p) => suma + (p.misSi || 0) + (p.misNo || 0), 0)}{" "}
             en juego
           </p>
